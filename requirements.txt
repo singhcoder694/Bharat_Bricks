@@ -1,0 +1,12 @@
+openai
+python-dotenv
+langchain
+langchain-openai
+langchain-core
+langchain-community
+langchain-text-splitters
+faiss-cpu
+numpy
+gdown
+fastapi
+uvicorn
