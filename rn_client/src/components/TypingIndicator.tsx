@@ -47,7 +47,7 @@ export function TypingIndicator() {
     <Animated.View style={[styles.row, { opacity, transform: [{ scale }] }]}>
       <LinearGradient colors={[colors.accentMuted, "transparent"]} style={styles.avatarRing}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>?</Text>
+          <Text style={styles.avatarText}>T</Text>
         </View>
       </LinearGradient>
 

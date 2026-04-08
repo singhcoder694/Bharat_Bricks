@@ -6,40 +6,79 @@ import { hapticLight } from "../lib/haptics";
 
 interface Props {
   onMenuPress: () => void;
+  serverOnline?: boolean | null;
 }
 
-export function ChatHeader({ onMenuPress }: Props) {
+export function ChatHeader({ onMenuPress, serverOnline }: Props) {
   const slideY = useRef(new Animated.Value(-16)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.spring(slideY, { toValue: 0, useNativeDriver: true, damping: 18, stiffness: 140 }),
-      Animated.timing(opacity, { toValue: 1, duration: 420, useNativeDriver: true }),
+      Animated.spring(slideY, {
+        toValue: 0,
+        useNativeDriver: true,
+        damping: 18,
+        stiffness: 140,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 420,
+        useNativeDriver: true,
+      }),
     ]).start();
   }, [slideY, opacity]);
 
+  const statusColor =
+    serverOnline === true
+      ? "#22c55e"
+      : serverOnline === false
+        ? "#ef4444"
+        : colors.textMuted;
+
+  const statusLabel =
+    serverOnline === true
+      ? "Online"
+      : serverOnline === false
+        ? "Offline"
+        : "Connecting…";
+
   return (
-    <Animated.View style={[styles.outer, shadows.header, { opacity, transform: [{ translateY: slideY }] }]}>
+    <Animated.View
+      style={[
+        styles.outer,
+        shadows.header,
+        { opacity, transform: [{ translateY: slideY }] },
+      ]}
+    >
       <View style={styles.container}>
         <View style={styles.left}>
           <Pressable
-            style={({ pressed }) => [styles.menuPill, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.menuPill,
+              pressed && styles.pressed,
+            ]}
             onPress={() => {
               hapticLight();
               onMenuPress();
             }}
             hitSlop={12}
-            android_ripple={{ color: "rgba(255,255,255,0.08)", borderless: false }}
+            android_ripple={{
+              color: "rgba(255,255,255,0.08)",
+              borderless: false,
+            }}
           >
             <View style={styles.menuBar} />
             <View style={[styles.menuBar, styles.menuBarMid]} />
             <View style={styles.menuBar} />
           </Pressable>
 
-          <LinearGradient colors={[colors.accentMuted, "rgba(99,102,241,0.2)"]} style={styles.iconRing}>
+          <LinearGradient
+            colors={[colors.accentMuted, "rgba(99,102,241,0.2)"]}
+            style={styles.iconRing}
+          >
             <View style={styles.icon}>
-              <Text style={styles.iconText}>?</Text>
+              <Text style={styles.iconText}>T</Text>
             </View>
           </LinearGradient>
 
@@ -47,9 +86,12 @@ export function ChatHeader({ onMenuPress }: Props) {
             <Text style={styles.title} numberOfLines={1}>
               Tritiya AI
             </Text>
-            <Text style={styles.sub} numberOfLines={1}>
-              Private · Encrypted · Anonymous
-            </Text>
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={styles.sub} numberOfLines={1}>
+                {statusLabel}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -135,10 +177,20 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     letterSpacing: -0.35,
   },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginTop: 2,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
   sub: {
     fontSize: 10.5,
     color: colors.textMuted,
-    marginTop: 2,
     letterSpacing: 0.2,
   },
 });

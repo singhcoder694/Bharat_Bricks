@@ -67,7 +67,7 @@ export function SplashScreen({ onFinish }: Props) {
       >
         <LinearGradient colors={[colors.accentMuted, "rgba(99,102,241,0.35)"]} style={styles.iconRing}>
           <View style={styles.iconInner}>
-            <Text style={styles.iconText}>?</Text>
+            <Text style={styles.iconText}>T</Text>
           </View>
         </LinearGradient>
       </Animated.View>

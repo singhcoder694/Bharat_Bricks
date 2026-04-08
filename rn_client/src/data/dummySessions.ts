@@ -51,14 +51,16 @@ export interface Language {
 }
 
 export const LANGUAGES: Language[] = [
-  { code: "en", label: "English", native: "English" },
-  { code: "hi", label: "Hindi", native: "हिन्दी" },
-  { code: "ta", label: "Tamil", native: "தமிழ்" },
-  { code: "te", label: "Telugu", native: "తెలుగు" },
-  { code: "bn", label: "Bengali", native: "বাংলা" },
-  { code: "mr", label: "Marathi", native: "मराठी" },
-  { code: "kn", label: "Kannada", native: "ಕನ್ನಡ" },
-  { code: "ml", label: "Malayalam", native: "മലയാളം" },
-  { code: "gu", label: "Gujarati", native: "ગુજરાતી" },
-  { code: "pa", label: "Punjabi", native: "ਪੰਜਾਬੀ" },
+  { code: "en-IN", label: "English", native: "English" },
+  { code: "hi-IN", label: "Hindi", native: "हिन्दी" },
+  { code: "ta-IN", label: "Tamil", native: "தமிழ்" },
+  { code: "te-IN", label: "Telugu", native: "తెలుగు" },
+  { code: "bn-IN", label: "Bengali", native: "বাংলা" },
+  { code: "mr-IN", label: "Marathi", native: "मराठी" },
+  { code: "kn-IN", label: "Kannada", native: "ಕನ್ನಡ" },
+  { code: "ml-IN", label: "Malayalam", native: "മലയാളം" },
+  { code: "gu-IN", label: "Gujarati", native: "ગુજરાતી" },
+  { code: "pa-IN", label: "Punjabi", native: "ਪੰਜਾਬੀ" },
 ];
+
+export const DEFAULT_LANGUAGE = "en-IN";

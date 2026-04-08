@@ -40,6 +40,8 @@ export const gradUser = ["#818cf8", "#6366f1", "#4f46e5"] as const;
 export const gradCta = ["#5eead4", "#2dd4bf", "#14b8a6"] as const;
 /** Drawer / modal accent strip */
 export const gradDrawer = ["#1e293b", "#172554", "#1e1b4b"] as const;
+/** Voice recording stop button */
+export const gradVoice = ["#ef4444", "#dc2626", "#b91c1c"] as const;
 
 export const spacing = {
   xs: 4,

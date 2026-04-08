@@ -9,8 +9,19 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { colors, gradCta, gradDrawer, radius, shadows, spacing } from "../theme";
-import { PREVIOUS_SESSIONS, LANGUAGES, type Language } from "../data/dummySessions";
+import {
+  colors,
+  gradCta,
+  gradDrawer,
+  radius,
+  shadows,
+  spacing,
+} from "../theme";
+import {
+  PREVIOUS_SESSIONS,
+  LANGUAGES,
+  type Language,
+} from "../data/dummySessions";
 import { hapticLight } from "../lib/haptics";
 
 const { width: SCREEN_W } = Dimensions.get("window");
@@ -20,25 +31,49 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onNewChat: () => void;
+  selectedLanguage: string;
+  onLanguageChange: (code: string) => void;
 }
 
-export function SideDrawer({ visible, onClose, onNewChat }: Props) {
+export function SideDrawer({
+  visible,
+  onClose,
+  onNewChat,
+  selectedLanguage,
+  onLanguageChange,
+}: Props) {
   const translateX = useRef(new Animated.Value(-DRAWER_W)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
   const [mounted, setMounted] = useState(visible);
-  const [selectedLang, setSelectedLang] = useState<string>("en");
 
   useEffect(() => {
     if (visible) {
       setMounted(true);
       Animated.parallel([
-        Animated.spring(translateX, { toValue: 0, useNativeDriver: true, damping: 22, stiffness: 160 }),
-        Animated.timing(backdropOpacity, { toValue: 1, duration: 320, useNativeDriver: true }),
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 22,
+          stiffness: 160,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 320,
+          useNativeDriver: true,
+        }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(translateX, { toValue: -DRAWER_W, duration: 260, useNativeDriver: true }),
-        Animated.timing(backdropOpacity, { toValue: 0, duration: 260, useNativeDriver: true }),
+        Animated.timing(translateX, {
+          toValue: -DRAWER_W,
+          duration: 260,
+          useNativeDriver: true,
+        }),
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 260,
+          useNativeDriver: true,
+        }),
       ]).start(() => setMounted(false));
     }
   }, [visible, translateX, backdropOpacity]);
@@ -47,7 +82,7 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
 
   const handleLang = (lang: Language) => {
     hapticLight();
-    setSelectedLang(lang.code);
+    onLanguageChange(lang.code);
   };
 
   return (
@@ -56,8 +91,18 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
-      <Animated.View style={[styles.drawerShell, { transform: [{ translateX }], width: DRAWER_W }]}>
-        <LinearGradient colors={[...gradDrawer]} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
+      <Animated.View
+        style={[
+          styles.drawerShell,
+          { transform: [{ translateX }], width: DRAWER_W },
+        ]}
+      >
+        <LinearGradient
+          colors={[...gradDrawer]}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        />
         <View style={styles.drawerEdge} pointerEvents="none" />
 
         <ScrollView
@@ -66,9 +111,12 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.header}>
-            <LinearGradient colors={[colors.accentMuted, "rgba(99,102,241,0.3)"]} style={styles.headerIconRing}>
+            <LinearGradient
+              colors={[colors.accentMuted, "rgba(99,102,241,0.3)"]}
+              style={styles.headerIconRing}
+            >
               <View style={styles.headerIcon}>
-                <Text style={styles.headerIconText}>?</Text>
+                <Text style={styles.headerIconText}>T</Text>
               </View>
             </LinearGradient>
             <Text style={styles.headerTitle}>Tritiya AI</Text>
@@ -76,7 +124,9 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
           </View>
 
           <Pressable
-            style={({ pressed }) => [pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] }]}
+            style={({ pressed }) => [
+              pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] },
+            ]}
             onPress={() => {
               hapticLight();
               onNewChat();
@@ -84,7 +134,12 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
             }}
             android_ripple={{ color: "rgba(255,255,255,0.1)" }}
           >
-            <LinearGradient colors={[...gradCta]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.newChatBtn}>
+            <LinearGradient
+              colors={[...gradCta]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.newChatBtn}
+            >
               <Text style={styles.newChatPlus}>+</Text>
               <Text style={styles.newChatText}>New conversation</Text>
             </LinearGradient>
@@ -94,17 +149,27 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
           {PREVIOUS_SESSIONS.map((s) => (
             <Pressable
               key={s.id}
-              style={({ pressed }) => [styles.sessionRow, pressed && styles.sessionRowPressed]}
+              style={({ pressed }) => [
+                styles.sessionRow,
+                pressed && styles.sessionRowPressed,
+              ]}
               onPress={() => {
                 hapticLight();
                 onClose();
               }}
               android_ripple={{ color: "rgba(255,255,255,0.06)" }}
             >
-              <LinearGradient colors={["rgba(94,234,212,0.5)", colors.accent]} style={styles.sessionDot} />
+              <LinearGradient
+                colors={["rgba(94,234,212,0.5)", colors.accent]}
+                style={styles.sessionDot}
+              />
               <View style={styles.sessionInfo}>
-                <Text style={styles.sessionTitle} numberOfLines={1}>{s.title}</Text>
-                <Text style={styles.sessionPreview} numberOfLines={1}>{s.preview}</Text>
+                <Text style={styles.sessionTitle} numberOfLines={1}>
+                  {s.title}
+                </Text>
+                <Text style={styles.sessionPreview} numberOfLines={1}>
+                  {s.preview}
+                </Text>
               </View>
               <View style={styles.sessionMeta}>
                 <Text style={styles.sessionDate}>{s.date}</Text>
@@ -113,10 +178,12 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
             </Pressable>
           ))}
 
-          <Text style={[styles.sectionLabel, { marginTop: 22 }]}>Language</Text>
+          <Text style={[styles.sectionLabel, { marginTop: 22 }]}>
+            Response language
+          </Text>
           <View style={styles.langGrid}>
             {LANGUAGES.map((lang) => {
-              const active = selectedLang === lang.code;
+              const active = selectedLanguage === lang.code;
               return (
                 <Pressable
                   key={lang.code}
@@ -127,10 +194,17 @@ export function SideDrawer({ visible, onClose, onNewChat }: Props) {
                     pressed && !active && { opacity: 0.85 },
                   ]}
                 >
-                  <Text style={[styles.langNative, active && styles.langTextActive]}>
+                  <Text
+                    style={[
+                      styles.langNative,
+                      active && styles.langTextActive,
+                    ]}
+                  >
                     {lang.native}
                   </Text>
-                  <Text style={[styles.langLabel, active && styles.langTextActive]}>
+                  <Text
+                    style={[styles.langLabel, active && styles.langTextActive]}
+                  >
                     {lang.label}
                   </Text>
                 </Pressable>
