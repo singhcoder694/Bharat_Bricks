@@ -309,19 +309,19 @@ Then fill in the values:
 | `SARVAM_API_KEY` | For voice | Sarvam AI subscription key for STT/TTS |
 | `CORS_ORIGINS` | No | Comma-separated allowed origins (default: `http://localhost:5173,http://127.0.0.1:5173`) |
 
-**Example `app/.env`:**
+**Example `app/.env` (placeholders only — never commit real secrets):**
 
 ```env
-DATABRICKS_TOKEN=dapi884febe904addc9ad234e045addd6e1a
-DATABRICKS_BASE_URL=https://7474652923398162.ai-gateway.cloud.databricks.com/mlflow/v1
+DATABRICKS_TOKEN=your-databricks-personal-access-token
+DATABRICKS_BASE_URL=https://your-workspace-id.ai-gateway.cloud.databricks.com/mlflow/v1
 LLM_MODEL=databricks-gpt-oss-20b
 COMPANION_MODEL=databricks-meta-llama-3-3-70b-instruct
 EMBEDDING_MODEL=databricks-bge-large-en
 
-DRIVE_FOLDER_URL=https://drive.google.com/drive/folders/1IK1uiaZPqTq41Tl2ULl6im39GZbXQL7y
+DRIVE_FOLDER_URL=https://drive.google.com/drive/folders/your-folder-id
 GOOGLE_API_KEY=your-google-api-key
 
-VS_WORKSPACE_URL=https://dbc-6b19f5c4-5b21.cloud.databricks.com
+VS_WORKSPACE_URL=https://your-vector-search-workspace.cloud.databricks.com
 VS_TOKEN=your-vector-search-workspace-pat
 VS_ENDPOINT=rag_endpoint
 VS_INDEX=main.rag.docs_index
@@ -329,6 +329,8 @@ RAG_TOP_K=5
 
 SARVAM_API_KEY=your-sarvam-api-key
 ```
+
+If any token was ever committed to Git, **rotate it in Databricks** (User Settings → Access tokens) and treat the old value as compromised. See [Databricks token management](https://docs.databricks.com/en/dev-tools/auth/pat.html) and [removing secrets from Git history](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository) if needed.
 
 ---
 
