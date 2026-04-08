@@ -17,13 +17,11 @@ audit_llm = ChatOpenAI(
     base_url=DATABRICKS_BASE_URL,
 )
 
-# .with_structured_output enforces the schema at the API level via tool calling
-# — no more text-based format instructions, no markdown fences, no parsing failures
-structured_llm = audit_llm.with_structured_output(ChunkAuditResult)
+structured_llm = audit_llm.with_structured_output(ChunkAuditResult, method="json_mode")
 
 audit_prompt = ChatPromptTemplate.from_messages([
-    ("system", "{guardrails}"),
-    ("human", "Audit this chunk:\n\nFilename: {filename}\n\nContent:\n{content}"),
+    ("system", "{guardrails}\n\nReturn JSON with keys: is_relevant (bool), relevance_score (float 0-1), relevant_text (verbatim extracted text or empty string)."),
+    ("human", "Audit this chunk and return your response as json.\n\nFilename: {filename}\n\nContent:\n{content}"),
 ])
 
 text_splitter = RecursiveCharacterTextSplitter(
