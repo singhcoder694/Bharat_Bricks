@@ -1,14 +1,20 @@
 import os
 import shutil
 import json
+import uuid
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
-from app.schemas import AuditResult
+from app.schemas import AuditResult, ChatRequest, ChatResponse
 from app.chains.audit import file_chain
+from app.chains.companion import companion_chain
 from app.utils.drive import list_folder_files, download_single_file
 
-app = FastAPI(title="SafeSpace Admin - Audit Ingestion Pipeline")
+app = FastAPI(title="SafeSpace - LGBTQ+ Companion Platform")
+
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 
 RESPONSE_FILE = "response.json"
 
@@ -94,3 +100,50 @@ def resume_ingestion():
     print(f"Found {len(file_list)} total .md files, {len(remaining)} remaining to process.\n")
     all_results = _process_files(remaining, existing_results)
     return [AuditResult(**r) for r in all_results]
+
+
+@app.post("/chat", response_model=ChatResponse)
+def chat(req: ChatRequest):
+    """Companion agent chat endpoint. Maintains per-session conversation history in memory."""
+    result = companion_chain.invoke(
+        {"input": req.message},
+        config={"configurable": {"session_id": req.session_id}},
+    )
+    return ChatResponse(session_id=req.session_id, response=result.content)
+
+
+@app.websocket("/ws/chat")
+async def websocket_chat(ws: WebSocket):
+    """WebSocket endpoint for persistent companion chat connections."""
+    await ws.accept()
+    session_id = str(uuid.uuid4())
+    await ws.send_json({"type": "session", "session_id": session_id})
+
+    try:
+        while True:
+            data = await ws.receive_json()
+            user_message = data.get("message", "").strip()
+            if not user_message:
+                await ws.send_json({"type": "error", "message": "Empty message"})
+                continue
+
+            await ws.send_json({"type": "typing"})
+
+            try:
+                result = companion_chain.invoke(
+                    {"input": user_message},
+                    config={"configurable": {"session_id": session_id}},
+                )
+                await ws.send_json({"type": "response", "message": result.content})
+            except Exception as e:
+                await ws.send_json({"type": "error", "message": f"Agent error: {str(e)}"})
+
+    except WebSocketDisconnect:
+        print(f"Session {session_id} disconnected")
+
+
+@app.get("/", response_class=HTMLResponse)
+def serve_frontend():
+    index_path = os.path.join(FRONTEND_DIR, "index.html")
+    with open(index_path, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
