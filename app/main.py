@@ -1,16 +1,19 @@
+import base64
 import json
 import logging
 import os
 import shutil
+import time
 import uuid
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from app.schemas import AuditResult, ChatRequest, ChatResponse, TranscribeResponse
+from app.schemas import AuditResult, ChatRequest, ChatResponse, TranscribeResponse, TtsRequest, TtsResponse, TtsSegment
 from app.config import CORS_ORIGINS
 from app.utils.sarvam_transcribe import transcribe_audio_bytes
+from app.utils.sarvam_tts import synthesize_speech_mp3_segments
 from app.chains.audit import file_chain
 from app.chains.companion import companion_chain
 from app.utils.drive import list_folder_files, download_single_file
@@ -31,6 +34,35 @@ if CORS_ORIGINS:
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 
 RESPONSE_FILE = "response.json"
+
+_TTS_CACHE_TTL_S = 60 * 60  # 1 hour
+_TTS_CACHE_MAX = 256
+_tts_cache: dict[str, tuple[float, TtsResponse]] = {}
+
+
+def _tts_cache_key(req: TtsRequest) -> str:
+    # Key includes all user-controlled inputs; model/speaker/pace are server config.
+    return f"{req.target_language_code.strip()}|{req.text.strip()}"
+
+
+def _tts_cache_get(key: str) -> TtsResponse | None:
+    now = time.time()
+    hit = _tts_cache.get(key)
+    if not hit:
+        return None
+    ts, val = hit
+    if now - ts > _TTS_CACHE_TTL_S:
+        _tts_cache.pop(key, None)
+        return None
+    return val
+
+
+def _tts_cache_set(key: str, val: TtsResponse) -> None:
+    # Simple size cap: drop oldest entry.
+    if len(_tts_cache) >= _TTS_CACHE_MAX:
+        oldest_key = min(_tts_cache.items(), key=lambda kv: kv[1][0])[0]
+        _tts_cache.pop(oldest_key, None)
+    _tts_cache[key] = (time.time(), val)
 
 
 def _load_existing_results() -> list[dict]:
@@ -114,6 +146,37 @@ def resume_ingestion():
     print(f"Found {len(file_list)} total .md files, {len(remaining)} remaining to process.\n")
     all_results = _process_files(remaining, existing_results)
     return [AuditResult(**r) for r in all_results]
+
+
+@app.post("/tts", response_model=TtsResponse)
+async def text_to_speech(req: TtsRequest):
+    """Natural TTS via Sarvam Bulbul (Indian accents). Returns one or more MP3 segments."""
+    key = _tts_cache_key(req)
+    cached = _tts_cache_get(key)
+    if cached is not None:
+        return cached
+
+    try:
+        segments_bytes = await synthesize_speech_mp3_segments(req.text, req.target_language_code.strip())
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("TTS failed")
+        raise HTTPException(status_code=500, detail=f"TTS failed: {e!s}") from e
+
+    if not segments_bytes:
+        raise HTTPException(status_code=400, detail="Empty text after processing")
+
+    resp = TtsResponse(
+        segments=[
+            TtsSegment(mime="audio/mpeg", data=base64.b64encode(b).decode("ascii"))
+            for b in segments_bytes
+        ],
+    )
+    _tts_cache_set(key, resp)
+    return resp
 
 
 @app.post("/transcribe", response_model=TranscribeResponse)
