@@ -10,6 +10,7 @@ from app.config import (
     COMPANION_LLM_MODEL,
     COMPANION_GUARDRAILS_PATH,
 )
+from app.utils.retriever import retrieve_runnable
 
 with open(COMPANION_GUARDRAILS_PATH, "r", encoding="utf-8") as f:
     companion_guardrails_text = f.read()
@@ -33,15 +34,29 @@ def _language_hint_block(inputs: dict) -> str:
     )
 
 
+_RAG_SYSTEM_MSG = (
+    "RETRIEVED CONTEXT (from the SafeSpace knowledge base):\n"
+    "{context}\n\n"
+    "Use this context to provide informed, accurate responses when relevant. "
+    "Cite the source naturally. If the context is not relevant to the user's "
+    "question, ignore it and rely on your general knowledge."
+)
+
 companion_prompt = ChatPromptTemplate.from_messages([
     ("system", companion_guardrails_text),
+    ("system", _RAG_SYSTEM_MSG),
     ("system", "{language_hint}"),
     MessagesPlaceholder("history"),
     ("human", "{input}"),
 ])
 
 chain_inner = companion_prompt | companion_llm
-chain_with_hint = RunnablePassthrough.assign(language_hint=_language_hint_block) | chain_inner
+chain_with_rag = RunnablePassthrough.assign(
+    language_hint=_language_hint_block,
+    context=retrieve_runnable,
+) | chain_inner
+
+HISTORY_WINDOW = 5
 
 session_store: dict[str, ChatMessageHistory] = {}
 
@@ -49,11 +64,14 @@ session_store: dict[str, ChatMessageHistory] = {}
 def get_session_history(session_id: str) -> ChatMessageHistory:
     if session_id not in session_store:
         session_store[session_id] = ChatMessageHistory()
-    return session_store[session_id]
+    history = session_store[session_id]
+    if len(history.messages) > HISTORY_WINDOW * 2:
+        history.messages = history.messages[-(HISTORY_WINDOW * 2):]
+    return history
 
 
 companion_chain = RunnableWithMessageHistory(
-    chain_with_hint,
+    chain_with_rag,
     get_session_history,
     input_messages_key="input",
     history_messages_key="history",
