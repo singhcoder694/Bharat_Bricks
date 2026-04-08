@@ -23,6 +23,7 @@ import {
 interface Props {
   onSend: (text: string) => void;
   disabled?: boolean;
+  speakModeActive?: boolean;
 }
 
 type VoiceState = "idle" | "recording" | "transcribing";
@@ -186,12 +187,19 @@ function SendFlash({ active }: { active: boolean }) {
 
 /* ── Main component ─────────────────────────────────── */
 
-export function ChatComposer({ onSend, disabled }: Props) {
+export function ChatComposer({ onSend, disabled, speakModeActive }: Props) {
   const [value, setValue] = useState("");
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [elapsed, setElapsed] = useState(0);
   const [showFlash, setShowFlash] = useState(false);
   const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (speakModeActive && voiceState === "recording") {
+      cancelRecording().catch(() => {});
+      setVoiceState("idle");
+    }
+  }, [speakModeActive, voiceState]);
 
   const sendScale = useRef(new Animated.Value(1)).current;
   const micPulse = useRef(new Animated.Value(1)).current;

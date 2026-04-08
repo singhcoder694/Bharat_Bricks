@@ -53,6 +53,14 @@ async def transcribe_audio_bytes(file_bytes: bytes, filename: str = "speech.webm
         file_mime = "audio/mp4"
     elif lower.endswith(".ogg"):
         file_mime = "audio/ogg"
+    elif lower.endswith(".wav"):
+        file_mime = "audio/wav"
+    elif lower.endswith(".caf"):
+        file_mime = "audio/x-caf"
+    elif lower.endswith(".3gp"):
+        file_mime = "audio/3gpp"
+    elif lower.endswith(".aac"):
+        file_mime = "audio/aac"
     else:
         file_mime = "application/octet-stream"
 

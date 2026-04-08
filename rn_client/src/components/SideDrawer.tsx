@@ -17,11 +17,7 @@ import {
   shadows,
   spacing,
 } from "../theme";
-import {
-  PREVIOUS_SESSIONS,
-  LANGUAGES,
-  type Language,
-} from "../data/dummySessions";
+import { LANGUAGES } from "../data/dummySessions";
 import { hapticLight } from "../lib/haptics";
 
 const { width: SCREEN_W } = Dimensions.get("window");
@@ -31,16 +27,12 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onNewChat: () => void;
-  selectedLanguage: string;
-  onLanguageChange: (code: string) => void;
 }
 
 export function SideDrawer({
   visible,
   onClose,
   onNewChat,
-  selectedLanguage,
-  onLanguageChange,
 }: Props) {
   const translateX = useRef(new Animated.Value(-DRAWER_W)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -80,11 +72,6 @@ export function SideDrawer({
 
   if (!mounted) return null;
 
-  const handleLang = (lang: Language) => {
-    hapticLight();
-    onLanguageChange(lang.code);
-  };
-
   return (
     <View style={styles.overlay}>
       <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
@@ -120,7 +107,7 @@ export function SideDrawer({
               </View>
             </LinearGradient>
             <Text style={styles.headerTitle}>Tritiya AI</Text>
-            <Text style={styles.headerSub}>Your conversations</Text>
+            <Text style={styles.headerSub}>Your safe space for knowledge</Text>
           </View>
 
           <Pressable
@@ -145,71 +132,66 @@ export function SideDrawer({
             </LinearGradient>
           </Pressable>
 
-          <Text style={styles.sectionLabel}>Recent</Text>
-          {PREVIOUS_SESSIONS.map((s) => (
-            <Pressable
-              key={s.id}
-              style={({ pressed }) => [
-                styles.sessionRow,
-                pressed && styles.sessionRowPressed,
-              ]}
-              onPress={() => {
-                hapticLight();
-                onClose();
-              }}
-              android_ripple={{ color: "rgba(255,255,255,0.06)" }}
-            >
-              <LinearGradient
-                colors={["rgba(94,234,212,0.5)", colors.accent]}
-                style={styles.sessionDot}
-              />
-              <View style={styles.sessionInfo}>
-                <Text style={styles.sessionTitle} numberOfLines={1}>
-                  {s.title}
-                </Text>
-                <Text style={styles.sessionPreview} numberOfLines={1}>
-                  {s.preview}
-                </Text>
-              </View>
-              <View style={styles.sessionMeta}>
-                <Text style={styles.sessionDate}>{s.date}</Text>
-                <Text style={styles.sessionCount}>{s.messageCount} msgs</Text>
-              </View>
-            </Pressable>
-          ))}
-
-          <Text style={[styles.sectionLabel, { marginTop: 22 }]}>
-            Response language
+          <Text style={styles.sectionLabel}>Supported Languages</Text>
+          <Text style={styles.sectionHint}>
+            Tritiya AI can respond in any of these languages
           </Text>
           <View style={styles.langGrid}>
-            {LANGUAGES.map((lang) => {
-              const active = selectedLanguage === lang.code;
-              return (
-                <Pressable
-                  key={lang.code}
-                  onPress={() => handleLang(lang)}
-                  style={({ pressed }) => [
-                    styles.langChip,
-                    active && styles.langChipActive,
-                    pressed && !active && { opacity: 0.85 },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.langNative,
-                      active && styles.langTextActive,
-                    ]}
-                  >
-                    {lang.native}
-                  </Text>
-                  <Text
-                    style={[styles.langLabel, active && styles.langTextActive]}
-                  >
-                    {lang.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            {LANGUAGES.map((lang) => (
+              <View key={lang.code} style={styles.langChip}>
+                <Text style={styles.langNative}>{lang.native}</Text>
+                <Text style={styles.langLabel}>{lang.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={[styles.sectionLabel, { marginTop: 26 }]}>
+            What I Can Help With
+          </Text>
+          <View style={styles.featureList}>
+            <View style={styles.featureRow}>
+              <Text style={styles.featureIcon}>⚖️</Text>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>Rights & Laws</Text>
+                <Text style={styles.featureDesc}>
+                  POSH Act, POCSO, IPC sections, and legal protections
+                </Text>
+              </View>
+            </View>
+            <View style={styles.featureRow}>
+              <Text style={styles.featureIcon}>🩺</Text>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>Health & Well-being</Text>
+                <Text style={styles.featureDesc}>
+                  Sexual health education, mental wellness, and safe practices
+                </Text>
+              </View>
+            </View>
+            <View style={styles.featureRow}>
+              <Text style={styles.featureIcon}>🤝</Text>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>Support & Resources</Text>
+                <Text style={styles.featureDesc}>
+                  Helplines, NGOs, counseling centers, and crisis support
+                </Text>
+              </View>
+            </View>
+            <View style={styles.featureRow}>
+              <Text style={styles.featureIcon}>🌈</Text>
+              <View style={styles.featureContent}>
+                <Text style={styles.featureTitle}>Identity & Inclusion</Text>
+                <Text style={styles.featureDesc}>
+                  Gender identity, LGBTQ+ rights, and inclusive information
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.infoCard}>
+            <Text style={styles.infoTitle}>🔒 Privacy First</Text>
+            <Text style={styles.infoText}>
+              Your conversations are private and not stored beyond the current session. No personal data is collected.
+            </Text>
           </View>
         </ScrollView>
 
@@ -339,56 +321,72 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1.4,
     marginHorizontal: spacing.lg,
-    marginBottom: 12,
+    marginBottom: 6,
+  },
+  sectionHint: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginHorizontal: spacing.lg,
+    marginBottom: 14,
+    lineHeight: 17,
+    opacity: 0.7,
   },
 
-  sessionRow: {
+  featureList: {
+    marginHorizontal: spacing.lg,
+    gap: 6,
+  },
+  featureRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 12,
-    marginHorizontal: spacing.sm,
-    marginBottom: 4,
-    paddingVertical: 12,
-    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: radius.sm,
     backgroundColor: "rgba(15,23,42,0.35)",
     borderWidth: 1,
     borderColor: colors.border,
   },
-  sessionRowPressed: {
-    backgroundColor: "rgba(94,234,212,0.08)",
-    borderColor: "rgba(94,234,212,0.2)",
+  featureIcon: {
+    fontSize: 18,
+    marginTop: 1,
   },
-  sessionDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-  },
-  sessionInfo: {
+  featureContent: {
     flex: 1,
   },
-  sessionTitle: {
-    fontSize: 14,
+  featureTitle: {
+    fontSize: 13.5,
     fontWeight: "700",
     color: colors.textPrimary,
   },
-  sessionPreview: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 3,
-  },
-  sessionMeta: {
-    alignItems: "flex-end",
-  },
-  sessionDate: {
-    fontSize: 11,
-    color: colors.accent,
-    fontWeight: "600",
-  },
-  sessionCount: {
-    fontSize: 10,
+  featureDesc: {
+    fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 2,
+    lineHeight: 16,
+  },
+
+  infoCard: {
+    marginHorizontal: spacing.lg,
+    marginTop: 20,
+    marginBottom: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: radius.md,
+    backgroundColor: "rgba(94,234,212,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(94,234,212,0.15)",
+  },
+  infoTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.accent,
+    marginBottom: 6,
+  },
+  infoText: {
+    fontSize: 12,
+    color: colors.textMuted,
+    lineHeight: 18,
   },
 
   langGrid: {
@@ -406,10 +404,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(2,6,23,0.45)",
     alignItems: "center",
   },
-  langChipActive: {
-    borderColor: colors.accent,
-    backgroundColor: "rgba(94,234,212,0.12)",
-  },
   langNative: {
     fontSize: 13,
     fontWeight: "700",
@@ -419,9 +413,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textMuted,
     marginTop: 2,
-  },
-  langTextActive: {
-    color: colors.accent,
   },
 
   footer: {

@@ -248,6 +248,7 @@ function KaraokeText({ text, progress }: { text: string; progress: number }) {
   const scrollRef = useRef<ScrollView>(null);
   const containerH = useRef(0);
   const contentH = useRef(0);
+  const prevIdx = useRef(-1);
 
   const words = useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
   const activeIdx = Math.min(
@@ -256,14 +257,16 @@ function KaraokeText({ text, progress }: { text: string; progress: number }) {
   );
 
   useEffect(() => {
+    if (activeIdx === prevIdx.current) return;
+    prevIdx.current = activeIdx;
     const scrollable = contentH.current - containerH.current;
     if (scrollable > 0 && scrollRef.current) {
       scrollRef.current.scrollTo({
-        y: progress * scrollable,
+        y: (activeIdx / Math.max(words.length - 1, 1)) * scrollable,
         animated: true,
       });
     }
-  }, [progress]);
+  }, [activeIdx, words.length]);
 
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(16)).current;
@@ -604,13 +607,21 @@ export function SpeakMode({
   const [userText, setUserText] = useState("");
   const [botText, setBotText] = useState("");
   const [readProgress, setReadProgress] = useState(0);
+  const [errorText, setErrorText] = useState("");
   const [mounted, setMounted] = useState(false);
   const mountedRef = useRef(false);
-  const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const busyRef = useRef(false);
+  const interruptedRef = useRef(false);
 
   const fadeIn = useRef(new Animated.Value(0)).current;
   const orbBreath = useRef(new Animated.Value(1)).current;
   const orbPress = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (!errorText) return;
+    const t = setTimeout(() => setErrorText(""), 4000);
+    return () => clearTimeout(t);
+  }, [errorText]);
 
   useEffect(() => {
     mountedRef.current = mounted;
@@ -662,40 +673,10 @@ export function SpeakMode({
     return () => b.stop();
   }, [mounted, orbBreath]);
 
-  // Read-progress timer during speaking
   useEffect(() => {
-    if (state !== "speaking" || !botText) {
-      if (progressTimer.current) {
-        clearInterval(progressTimer.current);
-        progressTimer.current = null;
-      }
-      return;
-    }
-
-    const words = botText.split(/\s+/).filter(Boolean);
-    if (words.length === 0) return;
-
-    const msPerWord = 360;
-    const totalMs = words.length * msPerWord;
-    const start = Date.now();
-
-    progressTimer.current = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const p = Math.min(elapsed / totalMs, 0.98);
-      setReadProgress(p);
-    }, 60);
-
-    return () => {
-      if (progressTimer.current) {
-        clearInterval(progressTimer.current);
-        progressTimer.current = null;
-      }
-    };
-  }, [state, botText]);
-
-  // Cleanup
-  useEffect(() => {
-    if (!visible) {
+    if (visible) {
+      cancelRecording().catch(() => {});
+    } else {
       cancelRecording().catch(() => {});
       stopTts().catch(() => {});
     }
@@ -716,88 +697,129 @@ export function SpeakMode({
     if (state === "processing") return;
 
     if (state === "speaking") {
+      interruptedRef.current = true;
       hapticLight();
       await stopTts();
       setReadProgress(1);
+      await new Promise((r) => setTimeout(r, 300));
+      if (!mountedRef.current) return;
       const granted = await requestMicPermission();
       if (!granted || !mountedRef.current) {
         setState("idle");
+        setErrorText("Microphone permission required");
+        busyRef.current = false;
         return;
       }
       try {
         setUserText("");
         setBotText("");
+        setErrorText("");
         setReadProgress(0);
         await startRecording();
         setState("recording");
       } catch {
         setState("idle");
+        setErrorText("Could not start recording");
       }
+      busyRef.current = false;
       return;
     }
 
-    if (state === "recording") {
-      hapticMedium();
-      setState("processing");
-      try {
-        const result = await stopAndTranscribe();
-        if (!result.text || !mountedRef.current) {
-          setState("idle");
-          return;
-        }
-
-        setUserText(result.text);
-
-        const chatRes = await sendChat({
-          session_id: sessionId,
-          message: result.text,
-          language_code: languageCode !== "en-IN" ? languageCode : null,
-        });
-
-        if (!mountedRef.current) return;
-
-        const reply = chatRes.response;
-        setBotText(reply);
-        onMessage(result.text, reply);
-
-        setState("speaking");
-        hapticSuccess();
-
-        try {
-          const ttsRes = await textToSpeech(reply, languageCode);
-          if (mountedRef.current) {
-            await playTtsSegments(ttsRes.segments);
-          }
-        } catch {
-          // TTS failed, still show text
-        }
-
-        if (mountedRef.current) {
-          setReadProgress(1);
-          setState("idle");
-        }
-      } catch {
-        if (mountedRef.current) {
-          setBotText("Something went wrong. Try again.");
-          setState("idle");
-        }
-      }
-      return;
-    }
-
-    // idle → recording
-    hapticLight();
-    setUserText("");
-    setBotText("");
-    setReadProgress(0);
-    const granted = await requestMicPermission();
-    if (!granted) return;
+    if (busyRef.current) return;
+    busyRef.current = true;
 
     try {
-      await startRecording();
-      setState("recording");
-    } catch {
-      setState("idle");
+      if (state === "recording") {
+        hapticMedium();
+        setState("processing");
+        setErrorText("");
+        interruptedRef.current = false;
+        try {
+          const result = await stopAndTranscribe();
+          if (!mountedRef.current) return;
+
+          if (!result.text) {
+            console.warn("[SpeakMode] STT returned empty text");
+            setErrorText("No speech detected. Tap to try again.");
+            setState("idle");
+            return;
+          }
+
+          setUserText(result.text);
+
+          const chatRes = await sendChat({
+            session_id: sessionId,
+            message: result.text,
+            language_code: languageCode !== "en-IN" ? languageCode : null,
+          });
+
+          if (!mountedRef.current) return;
+
+          const reply = chatRes.response;
+          setBotText(reply);
+          onMessage(result.text, reply);
+
+          setState("speaking");
+          hapticSuccess();
+
+          try {
+            const ttsRes = await textToSpeech(reply, languageCode);
+            if (mountedRef.current && !interruptedRef.current) {
+              await playTtsSegments(ttsRes.segments, (p) => {
+                if (mountedRef.current) setReadProgress(p);
+              });
+            }
+          } catch (ttsErr) {
+            console.warn("[SpeakMode] TTS playback failed:", ttsErr);
+          }
+
+          if (mountedRef.current && !interruptedRef.current) {
+            setReadProgress(1);
+            setState("idle");
+          }
+        } catch (e: any) {
+          console.warn("[SpeakMode] Voice pipeline error:", e);
+          if (mountedRef.current) {
+            const msg = e?.message || "";
+            if (/no speech|empty/i.test(msg)) {
+              setErrorText("No speech detected. Tap to try again.");
+            } else if (/timed? ?out/i.test(msg)) {
+              setErrorText("Request timed out. Please try again.");
+            } else if (/cannot reach|network|fetch/i.test(msg)) {
+              setErrorText("Cannot reach server. Check your connection.");
+            } else {
+              setErrorText("Something went wrong. Tap to try again.");
+            }
+            setBotText("");
+            setState("idle");
+          }
+        }
+        return;
+      }
+
+      // idle → recording
+      hapticLight();
+      setUserText("");
+      setBotText("");
+      setErrorText("");
+      setReadProgress(0);
+      const granted = await requestMicPermission();
+      if (!granted) {
+        setErrorText("Microphone permission required");
+        return;
+      }
+
+      try {
+        await startRecording();
+        setState("recording");
+      } catch {
+        setState("idle");
+        setErrorText("Could not start recording");
+      }
+    } finally {
+      if (!interruptedRef.current) {
+        busyRef.current = false;
+      }
     }
   }, [state, sessionId, languageCode, onMessage, orbPress]);
 
@@ -923,7 +945,7 @@ export function SpeakMode({
           </Animated.View>
         </Pressable>
 
-        {/* Bottom section — loading + karaoke */}
+        {/* Bottom section — loading + karaoke + errors */}
         <View style={s.bottomSection}>
           {showLoading && <CyclingLoader messages={loadingMessages} />}
           {showKaraoke && <KaraokeText text={botText} progress={readProgress} />}
@@ -931,6 +953,10 @@ export function SpeakMode({
           {state === "recording" && (
             <Text style={s.recordHint}>Tap again when done</Text>
           )}
+
+          {errorText ? (
+            <FadingText text={errorText} style={s.errorHint} />
+          ) : null}
         </View>
       </View>
 
@@ -1093,6 +1119,13 @@ const s = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 12,
     letterSpacing: 0.3,
+  },
+  errorHint: {
+    fontSize: 13,
+    color: "#f87171",
+    textAlign: "center",
+    marginTop: 10,
+    letterSpacing: 0.2,
   },
 
   footer: {

@@ -188,9 +188,6 @@ function AppContent() {
     setShowSuggestions(true);
   }, []);
 
-  const handleLanguageChange = useCallback((code: string) => {
-    setLanguageCode(code);
-  }, []);
 
   const handleVoiceMessage = useCallback(
     (userText: string, botReply: string) => {
@@ -291,7 +288,7 @@ function AppContent() {
                   colors={["rgba(15,23,42,0.85)", "rgba(2,6,23,0.95)"]}
                   style={StyleSheet.absoluteFill}
                 />
-                <ChatComposer onSend={handleSend} disabled={typing} />
+                <ChatComposer onSend={handleSend} disabled={typing} speakModeActive={speakMode} />
                 <Disclaimer />
               </Animated.View>
             </View>
@@ -302,8 +299,6 @@ function AppContent() {
           visible={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           onNewChat={handleNewChat}
-          selectedLanguage={languageCode}
-          onLanguageChange={handleLanguageChange}
         />
 
         <ExitModal
