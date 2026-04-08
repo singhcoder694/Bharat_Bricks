@@ -1,18 +1,32 @@
+import json
+import logging
 import os
 import shutil
-import json
 import uuid
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 
-from app.schemas import AuditResult, ChatRequest, ChatResponse
+from app.schemas import AuditResult, ChatRequest, ChatResponse, TranscribeResponse
+from app.config import CORS_ORIGINS
+from app.utils.sarvam_transcribe import transcribe_audio_bytes
 from app.chains.audit import file_chain
 from app.chains.companion import companion_chain
 from app.utils.drive import list_folder_files, download_single_file
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="SafeSpace - LGBTQ+ Companion Platform")
+
+if CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 
@@ -102,11 +116,40 @@ def resume_ingestion():
     return [AuditResult(**r) for r in all_results]
 
 
+@app.post("/transcribe", response_model=TranscribeResponse)
+async def transcribe(file: UploadFile = File(...)):
+    """Speech-to-text via Sarvam AI (see integrations/voice_transcription)."""
+    try:
+        body = await file.read()
+        if not body:
+            raise HTTPException(status_code=400, detail="Empty audio upload")
+        result = await transcribe_audio_bytes(body, file.filename or "speech.webm")
+    except HTTPException:
+        raise
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("Transcription failed")
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {e!s}") from e
+
+    if not result["text"]:
+        raise HTTPException(status_code=422, detail="No speech detected in the recording")
+
+    return TranscribeResponse(
+        text=result["text"],
+        language=result.get("language"),
+        language_probability=result.get("language_probability"),
+    )
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(req: ChatRequest):
     """Companion agent chat endpoint. Maintains per-session conversation history in memory."""
+    payload: dict = {"input": req.message}
+    if req.language_code:
+        payload["language_code"] = req.language_code
     result = companion_chain.invoke(
-        {"input": req.message},
+        payload,
         config={"configurable": {"session_id": req.session_id}},
     )
     return ChatResponse(session_id=req.session_id, response=result.content)
@@ -127,11 +170,16 @@ async def websocket_chat(ws: WebSocket):
                 await ws.send_json({"type": "error", "message": "Empty message"})
                 continue
 
+            language_code = data.get("language_code") or data.get("language")
+
             await ws.send_json({"type": "typing"})
 
             try:
+                payload: dict = {"input": user_message}
+                if language_code:
+                    payload["language_code"] = str(language_code).strip()
                 result = companion_chain.invoke(
-                    {"input": user_message},
+                    payload,
                     config={"configurable": {"session_id": session_id}},
                 )
                 await ws.send_json({"type": "response", "message": result.content})

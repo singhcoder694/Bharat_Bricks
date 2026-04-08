@@ -11,3 +11,5 @@ gdown
 fastapi
 uvicorn
 websockets
+python-multipart
+httpx

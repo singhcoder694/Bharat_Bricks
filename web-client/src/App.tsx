@@ -18,6 +18,8 @@ import "./App.css";
 
 const TYPING_DELAY = 1200;
 
+const API_BASE = import.meta.env.VITE_API_URL?.trim() ?? "";
+
 function App() {
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [typing, setTyping] = useState(false);
@@ -41,28 +43,32 @@ function App() {
     setTyping(false);
   }, []);
 
-  const handleSend = useCallback((text: string) => {
-    setShowSuggestions(false);
-    const userMsg: ChatMessage = {
-      id: makeId(),
-      role: "user",
-      text,
-      timestamp: Date.now(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
-    setTyping(true);
-
-    setTimeout(() => {
-      const botMsg: ChatMessage = {
+  const handleSend = useCallback(
+    (text: string, _meta?: { languageCode?: string | null }) => {
+      void _meta;
+      setShowSuggestions(false);
+      const userMsg: ChatMessage = {
         id: makeId(),
-        role: "assistant",
-        text: getNextReply(),
+        role: "user",
+        text,
         timestamp: Date.now(),
       };
-      setMessages((prev) => [...prev, botMsg]);
-      setTyping(false);
-    }, TYPING_DELAY);
-  }, []);
+      setMessages((prev) => [...prev, userMsg]);
+      setTyping(true);
+
+      setTimeout(() => {
+        const botMsg: ChatMessage = {
+          id: makeId(),
+          role: "assistant",
+          text: getNextReply(),
+          timestamp: Date.now(),
+        };
+        setMessages((prev) => [...prev, botMsg]);
+        setTyping(false);
+      }, TYPING_DELAY);
+    },
+    [],
+  );
 
   return (
     <div className="app-root">
@@ -86,7 +92,11 @@ function App() {
             </main>
 
             <div className="composer-wrap">
-              <ChatComposer onSend={handleSend} disabled={typing} />
+              <ChatComposer
+                onSend={handleSend}
+                disabled={typing}
+                apiBaseUrl={API_BASE || undefined}
+              />
               <Disclaimer />
             </div>
           </div>

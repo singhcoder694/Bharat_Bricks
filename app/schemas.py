@@ -17,8 +17,18 @@ class AuditResult(BaseModel):
 class ChatRequest(BaseModel):
     session_id: str = Field(description="Unique session identifier for conversation continuity")
     message: str = Field(description="User's message")
+    language_code: str | None = Field(
+        default=None,
+        description="Optional BCP-47 code from speech (e.g. hi-IN) for reply language",
+    )
 
 
 class ChatResponse(BaseModel):
     session_id: str
     response: str = Field(description="Companion agent's response")
+
+
+class TranscribeResponse(BaseModel):
+    text: str = Field(description="Transcribed speech")
+    language: str | None = Field(default=None, description="Detected BCP-47 language code")
+    language_probability: float | None = Field(default=None, description="Unused for Sarvam; reserved for API stability")
