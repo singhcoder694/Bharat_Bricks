@@ -40,7 +40,7 @@ No `ffmpeg` is required — Sarvam accepts WebM and other browser formats.
 
 ## Reply in the same language (LLM)
 
-After transcription, pass `language` from the JSON response to your chat layer (e.g. WebSocket `{ "message": "...", "language_code": "hi-IN" }`) and add a short system instruction: “Reply in the user’s language.” The main SafeSpace app does this automatically for voice turns.
+After transcription, pass `language` from the JSON response to your chat layer (e.g. WebSocket `{ "message": "...", "language_code": "hi-IN" }`) and add a short system instruction: “Reply in the user’s language.” The main Tritiya app does this automatically for voice turns.
 
 ## Bharat_Bricks — React `web-client`
 

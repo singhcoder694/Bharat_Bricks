@@ -1,7 +1,8 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnableLambda
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.messages import ToolMessage
 from langchain_community.chat_message_histories import ChatMessageHistory
 
 from config import (
@@ -10,7 +11,7 @@ from config import (
     COMPANION_LLM_MODEL,
     COMPANION_GUARDRAILS_PATH,
 )
-from utils.retriever import retrieve_runnable
+from utils.retriever import query_knowledgebase
 
 with open(COMPANION_GUARDRAILS_PATH, "r", encoding="utf-8") as f:
     companion_guardrails_text = f.read()
@@ -20,6 +21,8 @@ companion_llm = ChatOpenAI(
     api_key=DATABRICKS_TOKEN,
     base_url=DATABRICKS_BASE_URL,
 )
+
+companion_llm_with_tools = companion_llm.bind_tools([query_knowledgebase])
 
 
 def _language_hint_block(inputs: dict) -> str:
@@ -34,27 +37,35 @@ def _language_hint_block(inputs: dict) -> str:
     )
 
 
-_RAG_SYSTEM_MSG = (
-    "RETRIEVED CONTEXT (from the SafeSpace knowledge base):\n"
-    "{context}\n\n"
-    "Use this context to provide informed, accurate responses when relevant. "
-    "Cite the source naturally. If the context is not relevant to the user's "
-    "question, ignore it and rely on your general knowledge."
-)
-
 companion_prompt = ChatPromptTemplate.from_messages([
     ("system", companion_guardrails_text),
-    ("system", _RAG_SYSTEM_MSG),
     ("system", "{language_hint}"),
     MessagesPlaceholder("history"),
     ("human", "{input}"),
 ])
 
-chain_inner = companion_prompt | companion_llm
-chain_with_rag = RunnablePassthrough.assign(
-    language_hint=_language_hint_block,
-    context=retrieve_runnable,
-) | chain_inner
+
+def _run_agent(inputs: dict):
+    """Simple agent loop: LLM decides whether to call query_knowledgebase."""
+    inputs["language_hint"] = _language_hint_block(inputs)
+    messages = companion_prompt.invoke(inputs).to_messages()
+
+    response = companion_llm_with_tools.invoke(messages)
+
+    if not response.tool_calls:
+        return response
+
+    messages.append(response)
+    for tc in response.tool_calls:
+        print(f"[AGENT] Tool call: {tc['name']}(query={tc['args'].get('query', '')!r})")
+        result = query_knowledgebase.invoke(tc["args"])
+        messages.append(ToolMessage(content=result, tool_call_id=tc["id"]))
+
+    final = companion_llm_with_tools.invoke(messages)
+    return final
+
+
+chain_with_rag = RunnableLambda(_run_agent)
 
 HISTORY_WINDOW = 5
 

@@ -51,7 +51,7 @@ def download_single_file(file_id: str, filename: str) -> str:
     """Download a single file from Google Drive to a temp location.
     Returns the path to the downloaded temp file.
     """
-    temp_dir = tempfile.mkdtemp(prefix="safespace_")
+    temp_dir = tempfile.mkdtemp(prefix="tritiya_")
     output_path = os.path.join(temp_dir, filename)
     gdown.download(id=file_id, output=output_path, quiet=False)
     return output_path

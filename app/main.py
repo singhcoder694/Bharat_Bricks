@@ -20,7 +20,7 @@ from utils.drive import list_folder_files, download_single_file
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="SafeSpace - LGBTQ+ Companion Platform")
+app = FastAPI(title="Tritiya - LGBTQ+ Companion Platform")
 
 if CORS_ORIGINS:
     app.add_middleware(
@@ -31,7 +31,7 @@ if CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend")
 
 RESPONSE_FILE = "response.json"
 
@@ -95,7 +95,7 @@ def _process_files(file_list: list[dict], existing_results: list[dict]) -> list[
             print(f"[{i}/{total}] Done: is_relevant={result.is_relevant}, score={result.relevance_score}")
 
             parent_dir = os.path.dirname(file_path)
-            if os.path.isdir(parent_dir) and parent_dir.startswith(os.path.join(os.environ.get("TEMP", "/tmp"), "safespace_")):
+            if os.path.isdir(parent_dir) and parent_dir.startswith(os.path.join(os.environ.get("TEMP", "/tmp"), "tritiya_")):
                 shutil.rmtree(parent_dir, ignore_errors=True)
 
         except Exception as e:
@@ -211,10 +211,12 @@ def chat(req: ChatRequest):
     payload: dict = {"input": req.message}
     if req.language_code:
         payload["language_code"] = req.language_code
+    print(f"\n[USER] {req.message}")
     result = companion_chain.invoke(
         payload,
         config={"configurable": {"session_id": req.session_id}},
     )
+    print(f"[LLM] {result.content}\n")
     return ChatResponse(session_id=req.session_id, response=result.content)
 
 
@@ -238,6 +240,7 @@ async def websocket_chat(ws: WebSocket):
             await ws.send_json({"type": "typing"})
 
             try:
+                print(f"\n[USER] {user_message}")
                 payload: dict = {"input": user_message}
                 if language_code:
                     payload["language_code"] = str(language_code).strip()
@@ -245,6 +248,7 @@ async def websocket_chat(ws: WebSocket):
                     payload,
                     config={"configurable": {"session_id": session_id}},
                 )
+                print(f"[LLM] {result.content}\n")
                 await ws.send_json({"type": "response", "message": result.content})
             except Exception as e:
                 await ws.send_json({"type": "error", "message": f"Agent error: {str(e)}"})

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SafeSpace</title>
+  <title>Tritiya</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -276,9 +276,9 @@
 <body>
   <div class="app">
     <header>
-      <div class="logo">S</div>
+      <div class="logo">T</div>
       <div>
-        <h1>SafeSpace</h1>
+        <h1>Tritiya</h1>
         <p>Your LGBTQ+ companion</p>
       </div>
       <div class="status">
@@ -289,7 +289,7 @@
 
     <div class="messages" id="messages">
       <div class="welcome">
-        <h2>Welcome to SafeSpace</h2>
+        <h2>Welcome to Tritiya</h2>
         <p>A safe, private space to talk about your identity, feelings, and experiences. No messages are stored. Everything stays between us.</p>
       </div>
     </div>
@@ -338,7 +338,6 @@
         statusDot.classList.remove('connected');
         statusText.textContent = 'Disconnected';
         sendBtn.disabled = true;
-        setTimeout(connect, 3000);
       };
 
       ws.onerror = () => {
@@ -380,7 +379,7 @@
 
       const avatar = document.createElement('div');
       avatar.className = 'avatar';
-      avatar.textContent = role === 'ai' ? 'S' : 'U';
+      avatar.textContent = role === 'ai' ? 'T' : 'U';
 
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
@@ -397,7 +396,7 @@
       typingEl = document.createElement('div');
       typingEl.className = 'message ai';
       typingEl.innerHTML = `
-        <div class="avatar">S</div>
+        <div class="avatar">T</div>
         <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>
       `;
       messagesEl.appendChild(typingEl);

@@ -2,7 +2,7 @@ import logging
 
 from databricks.vector_search.client import VectorSearchClient
 from langchain_openai import OpenAIEmbeddings
-from langchain_core.runnables import RunnableLambda
+from langchain_core.tools import tool
 
 from config import (
     DATABRICKS_TOKEN,
@@ -69,4 +69,12 @@ def retrieve_context(query: str, top_k: int = RAG_TOP_K) -> str:
         return ""
 
 
-retrieve_runnable = RunnableLambda(lambda inputs: retrieve_context(inputs["input"]))
+@tool
+def query_knowledgebase(query: str) -> str:
+    """Search the Tritiya knowledge base for factual information about
+    LGBTQ+ rights, gender studies, laws, policies, court rulings, and
+    related topics in India and globally. Use this tool ONLY when the user
+    asks a question that requires specific factual or legal information
+    you don't have. Do NOT use for greetings, emotional support, or
+    general conversation."""
+    return retrieve_context(query)

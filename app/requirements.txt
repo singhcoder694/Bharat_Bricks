@@ -13,5 +13,6 @@ uvicorn
 websockets
 python-multipart
 httpx
+requests
 databricks-vectorsearch
 setuptools<71
