@@ -40,7 +40,7 @@ function App() {
   /** Warm TTS for the welcome bubble so first tap is faster. */
   useEffect(() => {
     if (API_BASE) prefetchTts(WELCOME_MESSAGE.id, WELCOME_MESSAGE.text, API_BASE);
-  }, [API_BASE]);
+  }, []);
 
   const handleNewChat = useCallback(() => {
     sessionIdRef.current = newSessionId();
