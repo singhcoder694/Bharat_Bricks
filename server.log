@@ -1,0 +1,249 @@
+INFO:     Started server process [39008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53470 - "GET /docs HTTP/1.1" 200 OK
+Downloading...
+From: https://drive.google.com/uc?id=1iIn0aipt53rpLxw9xzXkvlRIkmKck69T
+To: C:\Users\Prem\AppData\Local\Temp\safespace_458klvzn\55.md
+Loading existing results from response.json...
+Already processed: 464 files
+Listing files in Google Drive folder...
+Found 513 total .md files, 49 remaining to process.
+
+[1/49] Downloading: 55.md
+  0%|          | 0.00/24.5k [00:00<?, ?B/s]100%|##########| 24.5k/24.5k [00:00<00:00, 493kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1PcE-uVb6HTERNVUvR2tKUPZTmhulmQTV
+To: C:\Users\Prem\AppData\Local\Temp\safespace_67c5fnf6\56.md
+[1/49] Auditing: 55.md
+    Split into 3 chunks
+[1/49] Done: is_relevant=False, score=0.0
+[2/49] Downloading: 56.md
+  0%|          | 0.00/29.2k [00:00<?, ?B/s]100%|##########| 29.2k/29.2k [00:00<00:00, 429kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=10WcMhyiyIJvvo4HaKh9jRQ0bUzyUavQG
+To: C:\Users\Prem\AppData\Local\Temp\safespace_m2b3obab\57.md
+[2/49] Auditing: 56.md
+    Split into 2 chunks
+[2/49] Done: is_relevant=True, score=1.0
+[3/49] Downloading: 57.md
+  0%|          | 0.00/217 [00:00<?, ?B/s]100%|##########| 217/217 [00:00<?, ?B/s] 
+Downloading...
+From: https://drive.google.com/uc?id=1kfJzygKNlVKES9_IAmjaphLn8HALRscM
+To: C:\Users\Prem\AppData\Local\Temp\safespace_mp2k6hwb\58.md
+[3/49] Auditing: 57.md
+    Split into 1 chunks
+[3/49] Done: is_relevant=False, score=0.0
+[4/49] Downloading: 58.md
+  0%|          | 0.00/11.7k [00:00<?, ?B/s]100%|##########| 11.7k/11.7k [00:00<00:00, 1.48MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1XPi2DVO9WRRX6oiVeme9QKZlRzsDyVFZ
+To: C:\Users\Prem\AppData\Local\Temp\safespace_6smbv7ma\59.md
+[4/49] Auditing: 58.md
+    Split into 1 chunks
+[4/49] Done: is_relevant=False, score=0.0
+[5/49] Downloading: 59.md
+  0%|          | 0.00/222k [00:00<?, ?B/s]100%|##########| 222k/222k [00:00<00:00, 955kB/s]100%|##########| 222k/222k [00:00<00:00, 951kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1LtPqGhrtX8aisBNNZbBwH048p8R2srEm
+To: C:\Users\Prem\AppData\Local\Temp\safespace_28j1xiuc\6.md
+[5/49] Auditing: 59.md
+    Split into 13 chunks
+[5/49] ERROR on 59.md: Could not parse response content as the length limit was reached - CompletionUsage(completion_tokens=25000, prompt_tokens=9888, total_tokens=34888, completion_tokens_details=None, prompt_tokens_details=None)
+[6/49] Downloading: 6.md
+  0%|          | 0.00/19.1k [00:00<?, ?B/s]100%|##########| 19.1k/19.1k [00:00<00:00, 689kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=10nL-eZS0jtflk0JTc9rZEdqpdPoW7wxi
+To: C:\Users\Prem\AppData\Local\Temp\safespace_tufj85z5\60.md
+[6/49] Auditing: 6.md
+    Split into 1 chunks
+[6/49] Done: is_relevant=True, score=1.0
+[7/49] Downloading: 60.md
+  0%|          | 0.00/85.8k [00:00<?, ?B/s]100%|##########| 85.8k/85.8k [00:00<00:00, 629kB/s]100%|##########| 85.8k/85.8k [00:00<00:00, 629kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1CfuQkI6P_KbyXyCzIpP9zkl1PIcuJ4VV
+To: C:\Users\Prem\AppData\Local\Temp\safespace_v4380xz6\61.md
+[7/49] Auditing: 60.md
+    Split into 6 chunks
+[7/49] Done: is_relevant=True, score=0.67
+[8/49] Downloading: 61.md
+  0%|          | 0.00/4.96k [00:00<?, ?B/s]100%|##########| 4.96k/4.96k [00:00<00:00, 4.95MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1jUuete8t-ERRMWkeBtm_iKJOeN8lpASu
+To: C:\Users\Prem\AppData\Local\Temp\safespace_93nyd94j\62.md
+[8/49] Auditing: 61.md
+    Split into 1 chunks
+[8/49] Done: is_relevant=True, score=1.0
+[9/49] Downloading: 62.md
+  0%|          | 0.00/161k [00:00<?, ?B/s]100%|##########| 161k/161k [00:00<00:00, 832kB/s]100%|##########| 161k/161k [00:00<00:00, 832kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1il4s01sbT55xPaZXtdzCwfS8DHFDd8vF
+To: C:\Users\Prem\AppData\Local\Temp\safespace_5cv1zncm\63.md
+[9/49] Auditing: 62.md
+    Split into 10 chunks
+[9/49] ERROR on 62.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[10/49] Downloading: 63.md
+  0%|          | 0.00/23.5k [00:00<?, ?B/s]100%|##########| 23.5k/23.5k [00:00<00:00, 560kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=15Zc7Slr4HylQ0zhBUAApwXGY5B5ZU4Vx
+To: C:\Users\Prem\AppData\Local\Temp\safespace_waproyto\64.md
+[10/49] Auditing: 63.md
+    Split into 3 chunks
+[10/49] Done: is_relevant=True, score=0.67
+[11/49] Downloading: 64.md
+  0%|          | 0.00/56.5k [00:00<?, ?B/s]100%|##########| 56.5k/56.5k [00:00<00:00, 546kB/s]100%|##########| 56.5k/56.5k [00:00<00:00, 546kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1QSTSlThhXtVwxF35UvsEBFS7ruKvJbrr
+To: C:\Users\Prem\AppData\Local\Temp\safespace_htpjtvx6\65.md
+[11/49] Auditing: 64.md
+    Split into 4 chunks
+[11/49] Done: is_relevant=True, score=0.5
+[12/49] Downloading: 65.md
+  0%|          | 0.00/328k [00:00<?, ?B/s]100%|##########| 328k/328k [00:00<00:00, 862kB/s]100%|##########| 328k/328k [00:00<00:00, 859kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1Z6r79qbrgp4C6EEbkmR_xeP3D_k6u7iT
+To: C:\Users\Prem\AppData\Local\Temp\safespace_1giel93m\66.md
+[12/49] Auditing: 65.md
+    Split into 16 chunks
+[12/49] ERROR on 65.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[13/49] Downloading: 66.md
+  0%|          | 0.00/3.09M [00:00<?, ?B/s] 17%|#6        | 524k/3.09M [00:00<00:01, 1.85MB/s] 51%|#####     | 1.57M/3.09M [00:00<00:00, 3.58MB/s]100%|##########| 3.09M/3.09M [00:00<00:00, 5.45MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1bbJO2k5s2rg0gkTKxPf9oBFSDkejrGO2
+To: C:\Users\Prem\AppData\Local\Temp\safespace_vexehv_2\67.md
+[13/49] Auditing: 66.md
+    Split into 146 chunks
+[13/49] ERROR on 66.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace QPS rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[14/49] Downloading: 67.md
+  0%|          | 0.00/27.4k [00:00<?, ?B/s]100%|##########| 27.4k/27.4k [00:00<00:00, 471kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1ftWMeCiMMDFq2wfKP-t4_vbQFwZ8i97e
+To: C:\Users\Prem\AppData\Local\Temp\safespace_w78yp7a0\68.md
+[14/49] Auditing: 67.md
+    Split into 2 chunks
+[14/49] ERROR on 67.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[15/49] Downloading: 68.md
+  0%|          | 0.00/14.0k [00:00<?, ?B/s]100%|##########| 14.0k/14.0k [00:00<00:00, 1.27MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1NKTGAndBQrp7nhPEtpXSHQ_OBdtOfOtG
+To: C:\Users\Prem\AppData\Local\Temp\safespace_1gfitk9r\69.md
+[15/49] Auditing: 68.md
+    Split into 1 chunks
+[15/49] ERROR on 68.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[16/49] Downloading: 69.md
+  0%|          | 0.00/3.16k [00:00<?, ?B/s]100%|##########| 3.16k/3.16k [00:00<00:00, 3.15MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1d-wx5S21zjKQ6YVPM70OUabB5liGc_Bc
+To: C:\Users\Prem\AppData\Local\Temp\safespace_ryv1n7ys\7.md
+[16/49] Auditing: 69.md
+    Split into 1 chunks
+[16/49] ERROR on 69.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[17/49] Downloading: 7.md
+  0%|          | 0.00/20.8k [00:00<?, ?B/s]100%|##########| 20.8k/20.8k [00:00<00:00, 417kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1PNJJQLgdZW0WPKb-yC2BdOCfqZxpfWcn
+To: C:\Users\Prem\AppData\Local\Temp\safespace_r6dyuxyu\70.md
+[17/49] Auditing: 7.md
+    Split into 3 chunks
+[17/49] ERROR on 7.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[18/49] Downloading: 70.md
+  0%|          | 0.00/3.00k [00:00<?, ?B/s]100%|##########| 3.00k/3.00k [00:00<?, ?B/s]
+Downloading...
+From: https://drive.google.com/uc?id=1P7C6gkIb5HUmFCJoV0jDi6PkmCH0euos
+To: C:\Users\Prem\AppData\Local\Temp\safespace_3vy6tc96\71.md
+[18/49] Auditing: 70.md
+    Split into 1 chunks
+[18/49] ERROR on 70.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[19/49] Downloading: 71.md
+  0%|          | 0.00/2.85k [00:00<?, ?B/s]100%|##########| 2.85k/2.85k [00:00<?, ?B/s]
+Downloading...
+From: https://drive.google.com/uc?id=1eU9GLHWxBAsAKVdu9femj7oGyaAnmTQX
+To: C:\Users\Prem\AppData\Local\Temp\safespace_dydrv4to\72.md
+[19/49] Auditing: 71.md
+    Split into 1 chunks
+[19/49] ERROR on 71.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[20/49] Downloading: 72.md
+  0%|          | 0.00/14.9k [00:00<?, ?B/s]100%|##########| 14.9k/14.9k [00:00<00:00, 355kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1o6-_cAHDzGAcJkFFteEZlfjld4JeO1Xs
+To: C:\Users\Prem\AppData\Local\Temp\safespace_u_2daz_z\73.md
+[20/49] Auditing: 72.md
+    Split into 1 chunks
+[20/49] ERROR on 72.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[21/49] Downloading: 73.md
+  0%|          | 0.00/1.68k [00:00<?, ?B/s]100%|##########| 1.68k/1.68k [00:00<?, ?B/s]
+Downloading...
+From: https://drive.google.com/uc?id=1TrHlAh0TLHqB9mQSneEj32rNmKCVOJgy
+To: C:\Users\Prem\AppData\Local\Temp\safespace_so6erc97\74.md
+[21/49] Auditing: 73.md
+    Split into 1 chunks
+[21/49] ERROR on 73.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[22/49] Downloading: 74.md
+  0%|          | 0.00/4.74k [00:00<?, ?B/s]100%|##########| 4.74k/4.74k [00:00<?, ?B/s]
+Downloading...
+From: https://drive.google.com/uc?id=1DffUHN1Vsyo8S60kEb8cGVecpje0OjH9
+To: C:\Users\Prem\AppData\Local\Temp\safespace_xznhpcqa\75.md
+[22/49] Auditing: 74.md
+    Split into 1 chunks
+[22/49] ERROR on 74.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[23/49] Downloading: 75.md
+  0%|          | 0.00/4.68k [00:00<?, ?B/s]100%|##########| 4.68k/4.68k [00:00<00:00, 4.36MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1_N5xAR33TdL_7xhqL4KrVvjp9IhMnlTZ
+To: C:\Users\Prem\AppData\Local\Temp\safespace_uzmtck20\76.md
+[23/49] Auditing: 75.md
+    Split into 1 chunks
+[23/49] ERROR on 75.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[24/49] Downloading: 76.md
+  0%|          | 0.00/1.16k [00:00<?, ?B/s]100%|##########| 1.16k/1.16k [00:00<?, ?B/s]
+Downloading...
+From: https://drive.google.com/uc?id=1f76LPB8d57Q5Hql66aefn96HOvRZm8un
+To: C:\Users\Prem\AppData\Local\Temp\safespace_mluxtuan\77.md
+[24/49] Auditing: 76.md
+    Split into 1 chunks
+[24/49] ERROR on 76.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[25/49] Downloading: 77.md
+  0%|          | 0.00/2.75k [00:00<?, ?B/s]100%|##########| 2.75k/2.75k [00:00<00:00, 1.38MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1rRArqRy27WYXhlAWDAU1wiRMctvJyfg0
+To: C:\Users\Prem\AppData\Local\Temp\safespace_47b15cyg\78.md
+[25/49] Auditing: 77.md
+    Split into 1 chunks
+[25/49] ERROR on 77.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[26/49] Downloading: 78.md
+  0%|          | 0.00/2.67k [00:00<?, ?B/s]100%|##########| 2.67k/2.67k [00:00<00:00, 2.68MB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1NE3W9NBhZ_c2P6ma8UDMPt4yVLKf32jz
+To: C:\Users\Prem\AppData\Local\Temp\safespace_sq0a1ay8\79.md
+[26/49] Auditing: 78.md
+    Split into 1 chunks
+[26/49] ERROR on 78.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[27/49] Downloading: 79.md
+  0%|          | 0.00/1.98k [00:00<?, ?B/s]100%|##########| 1.98k/1.98k [00:00<?, ?B/s]
+Downloading...
+From: https://drive.google.com/uc?id=1jhRa65HVNevwbFOrMXdS4P7U6-tHzhUu
+To: C:\Users\Prem\AppData\Local\Temp\safespace_9fkyqv81\8.md
+[27/49] Auditing: 79.md
+    Split into 1 chunks
+[27/49] ERROR on 79.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[28/49] Downloading: 8.md
+  0%|          | 0.00/21.9k [00:00<?, ?B/s]100%|##########| 21.9k/21.9k [00:00<00:00, 365kB/s]
+Downloading...
+From: https://drive.google.com/uc?id=1nQEkx9lUAyxxLcJWhuaailRBYlqlWg5N
+To: C:\Users\Prem\AppData\Local\Temp\safespace_37x6eak6\80.md
+[28/49] Auditing: 8.md
+    Split into 3 chunks
+[28/49] ERROR on 8.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[29/49] Downloading: 80.md
+  0%|          | 0.00/1.76k [00:00<?, ?B/s]100%|##########| 1.76k/1.76k [00:00<?, ?B/s]
+INFO:     Shutting down
+INFO:     Waiting for connections to close. (CTRL+C to force quit)
+Downloading...
+From: https://drive.google.com/uc?id=1kVXZCtUIrSGBzlatAnPp9uzJ4Ph4DvE8
+To: C:\Users\Prem\AppData\Local\Temp\safespace_smic6tsb\81.md
+[29/49] Auditing: 80.md
+    Split into 1 chunks
+[29/49] ERROR on 80.md: Error code: 429 - {'error_code': 'REQUEST_LIMIT_EXCEEDED', 'message': 'REQUEST_LIMIT_EXCEEDED: Exceeded workspace output tokens per minute rate limit for databricks-qwen3-next-80b-a3b-instruct. Please use a provisioned throughput Foundation Model APIs endpoint for a higher rate limit.'}
+[30/49] Downloading: 81.md
+  0%|          | 0.00/4.28k [00:00<?, ?B/s]100%|##########| 4.28k/4.28k [00:00<?, ?B/s]

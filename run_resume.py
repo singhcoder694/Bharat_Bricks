@@ -6,11 +6,13 @@ Stops only when all 4 models have failed in the same round.
 """
 
 import subprocess
+import sys
 import requests
 import time
 import re
 import os
-import signal
+
+sys.stdout.reconfigure(line_buffering=True)
 
 MODELS = [
     "databricks-qwen3-next-80b-a3b-instruct",
@@ -35,15 +37,42 @@ def set_model_in_env(model: str):
     print(f"  .env updated: LLM_MODEL={model}")
 
 
+def kill_port_8000():
+    """Kill any process occupying port 8000 (Windows-specific)."""
+    try:
+        result = subprocess.run(
+            ["netstat", "-ano"],
+            capture_output=True, text=True, timeout=5,
+        )
+        for line in result.stdout.splitlines():
+            if ":8000" in line and "LISTENING" in line:
+                pid = line.strip().split()[-1]
+                print(f"  Killing existing process on port 8000 (PID {pid})...")
+                subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, timeout=5)
+                time.sleep(2)
+    except Exception:
+        pass
+
+
 def start_server() -> subprocess.Popen:
+    kill_port_8000()
+
+    log_path = os.path.join(os.path.dirname(__file__), "server.log")
+    log_file = open(log_path, "w", encoding="utf-8")
+
     proc = subprocess.Popen(
-        ["python", "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
-        stdout=subprocess.PIPE,
+        [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+        stdout=log_file,
         stderr=subprocess.STDOUT,
-        text=True,
+        cwd=os.path.dirname(__file__),
     )
     deadline = time.time() + STARTUP_TIMEOUT
     while time.time() < deadline:
+        if proc.poll() is not None:
+            log_file.close()
+            with open(log_path, "r", encoding="utf-8") as f:
+                output = f.read()
+            raise RuntimeError(f"Server process exited (code {proc.returncode}):\n{output[:1000]}")
         try:
             r = requests.get(f"{SERVER_URL}/docs", timeout=2)
             if r.status_code == 200:
@@ -52,7 +81,12 @@ def start_server() -> subprocess.Popen:
         except requests.ConnectionError:
             pass
         time.sleep(1)
-    raise RuntimeError("Server failed to start within timeout")
+
+    log_file.close()
+    with open(log_path, "r", encoding="utf-8") as f:
+        output = f.read()
+    proc.kill()
+    raise RuntimeError(f"Server failed to start within {STARTUP_TIMEOUT}s. Log:\n{output[:1000]}")
 
 
 def stop_server(proc: subprocess.Popen):
