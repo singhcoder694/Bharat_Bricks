@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Animated,
   BackHandler,
+  Easing,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -12,6 +14,7 @@ import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { AppBackground } from "./src/components/AppBackground";
 import { SplashScreen } from "./src/components/SplashScreen";
 import { ChatHeader } from "./src/components/ChatHeader";
@@ -22,6 +25,7 @@ import { SuggestedPrompts } from "./src/components/SuggestedPrompts";
 import { Disclaimer } from "./src/components/Disclaimer";
 import { SideDrawer } from "./src/components/SideDrawer";
 import { ExitModal } from "./src/components/ExitModal";
+import { SpeakMode } from "./src/components/SpeakMode";
 import { WELCOME_MESSAGE, makeId } from "./src/data/dummyChat";
 import { DEFAULT_LANGUAGE } from "./src/data/dummySessions";
 import { sendChat, checkServer } from "./src/lib/api";
@@ -37,6 +41,7 @@ function AppContent() {
   const [splashDone, setSplashDone] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [exitVisible, setExitVisible] = useState(false);
+  const [speakMode, setSpeakMode] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
   const [typing, setTyping] = useState(false);
@@ -47,7 +52,30 @@ function AppContent() {
   const listRef = useRef<FlatList<ChatMessage>>(null);
   const sessionRef = useRef(generateSessionId());
 
-  // Ping server on mount and periodically
+  const composerFade = useRef(new Animated.Value(0)).current;
+  const composerSlide = useRef(new Animated.Value(40)).current;
+
+  useEffect(() => {
+    if (splashDone) {
+      Animated.parallel([
+        Animated.timing(composerFade, {
+          toValue: 1,
+          duration: 500,
+          delay: 200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.spring(composerSlide, {
+          toValue: 0,
+          delay: 200,
+          useNativeDriver: true,
+          damping: 18,
+          stiffness: 120,
+        }),
+      ]).start();
+    }
+  }, [splashDone, composerFade, composerSlide]);
+
   useEffect(() => {
     let mounted = true;
     const ping = async () => {
@@ -64,6 +92,10 @@ function AppContent() {
 
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (speakMode) {
+        setSpeakMode(false);
+        return true;
+      }
       if (drawerOpen) {
         setDrawerOpen(false);
         return true;
@@ -75,13 +107,21 @@ function AppContent() {
       return false;
     });
     return () => sub.remove();
-  }, [drawerOpen, exitVisible]);
+  }, [speakMode, drawerOpen, exitVisible]);
 
   const scrollToEnd = useCallback(() => {
     setTimeout(() => {
       listRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    }, 120);
   }, []);
+
+  const msgCountRef = useRef(messages.length);
+  useEffect(() => {
+    if (messages.length > msgCountRef.current) {
+      scrollToEnd();
+    }
+    msgCountRef.current = messages.length;
+  }, [messages.length, scrollToEnd]);
 
   const handleSend = useCallback(
     async (text: string) => {
@@ -152,6 +192,27 @@ function AppContent() {
     setLanguageCode(code);
   }, []);
 
+  const handleVoiceMessage = useCallback(
+    (userText: string, botReply: string) => {
+      const userMsg: ChatMessage = {
+        id: makeId(),
+        role: "user",
+        text: userText,
+        timestamp: Date.now(),
+      };
+      const botMsg: ChatMessage = {
+        id: makeId(),
+        role: "assistant",
+        text: botReply,
+        timestamp: Date.now(),
+      };
+      setMessages((prev) => [...prev, userMsg, botMsg]);
+      setShowSuggestions(false);
+      scrollToEnd();
+    },
+    [scrollToEnd],
+  );
+
   const renderItem = useCallback(
     ({ item, index }: { item: ChatMessage; index: number }) => (
       <MessageBubble
@@ -164,17 +225,12 @@ function AppContent() {
     [languageCode, handleRetry],
   );
 
-  const contentPad = {
-    paddingTop: Math.max(insets.top, 8),
-    paddingBottom: Math.max(insets.bottom, 6),
-  };
-
   if (!splashDone) {
     return (
       <View style={styles.root}>
         <StatusBar style="light" />
         <AppBackground>
-          <View style={[styles.content, contentPad]}>
+          <View style={[styles.content, { paddingTop: Math.max(insets.top, 8) }]}>
             <SplashScreen onFinish={() => setSplashDone(true)} />
           </View>
         </AppBackground>
@@ -186,39 +242,58 @@ function AppContent() {
     <View style={styles.root}>
       <StatusBar style="light" />
       <AppBackground>
-        <View style={[styles.content, contentPad]}>
+        <View style={[styles.content, { paddingTop: Math.max(insets.top, 8) }]}>
           <ChatHeader
             onMenuPress={() => setDrawerOpen(true)}
             serverOnline={serverOnline}
+            onSpeakMode={() => setSpeakMode(true)}
           />
 
           <KeyboardAvoidingView
             style={styles.flex}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={0}
+            behavior="padding"
+            keyboardVerticalOffset={insets.top}
+            enabled={Platform.OS === "ios"}
           >
-            <FlatList
-              ref={listRef}
-              data={messages}
-              renderItem={renderItem}
-              keyExtractor={(m) => m.id}
-              contentContainerStyle={styles.list}
-              showsVerticalScrollIndicator={false}
-              onContentSizeChange={() => scrollToEnd()}
-              ListFooterComponent={
-                <>
-                  <SuggestedPrompts
-                    onPick={handleSend}
-                    visible={showSuggestions}
-                  />
-                  {typing ? <TypingIndicator /> : null}
-                </>
-              }
-            />
+            <View style={styles.flex}>
+              <FlatList
+                ref={listRef}
+                data={messages}
+                renderItem={renderItem}
+                keyExtractor={(m) => m.id}
+                style={styles.flex}
+                contentContainerStyle={styles.list}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="interactive"
+                ListFooterComponent={
+                  <>
+                    <SuggestedPrompts
+                      onPick={handleSend}
+                      visible={showSuggestions}
+                    />
+                    {typing ? <TypingIndicator /> : null}
+                  </>
+                }
+              />
 
-            <View style={styles.composerWrap}>
-              <ChatComposer onSend={handleSend} disabled={typing} />
-              <Disclaimer />
+              <Animated.View
+                style={[
+                  styles.composerWrap,
+                  {
+                    paddingBottom: Math.max(insets.bottom, 8),
+                    opacity: composerFade,
+                    transform: [{ translateY: composerSlide }],
+                  },
+                ]}
+              >
+                <LinearGradient
+                  colors={["rgba(15,23,42,0.85)", "rgba(2,6,23,0.95)"]}
+                  style={StyleSheet.absoluteFill}
+                />
+                <ChatComposer onSend={handleSend} disabled={typing} />
+                <Disclaimer />
+              </Animated.View>
             </View>
           </KeyboardAvoidingView>
         </View>
@@ -235,6 +310,14 @@ function AppContent() {
           visible={exitVisible}
           onStay={() => setExitVisible(false)}
           onEnd={() => BackHandler.exitApp()}
+        />
+
+        <SpeakMode
+          visible={speakMode}
+          onClose={() => setSpeakMode(false)}
+          sessionId={sessionRef.current}
+          languageCode={languageCode}
+          onMessage={handleVoiceMessage}
         />
       </AppBackground>
     </View>
@@ -266,8 +349,8 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   composerWrap: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(148,163,184,0.2)",
-    backgroundColor: "rgba(15,23,42,0.55)",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(94,234,212,0.08)",
+    overflow: "hidden",
   },
 });

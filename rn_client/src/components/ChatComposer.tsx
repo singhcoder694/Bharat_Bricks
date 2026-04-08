@@ -109,58 +109,78 @@ function WaveBars() {
   );
 }
 
-function BouncingDots() {
-  const anims = useRef([
-    new Animated.Value(0),
-    new Animated.Value(0),
-    new Animated.Value(0),
-  ]).current;
+function SpinnerDots() {
+  const rotation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const loops: Animated.CompositeAnimation[] = [];
-    const timeouts: ReturnType<typeof setTimeout>[] = [];
+    const anim = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    anim.start();
+    return () => anim.stop();
+  }, [rotation]);
 
-    anims.forEach((anim, i) => {
-      const tid = setTimeout(() => {
-        const loop = Animated.loop(
-          Animated.sequence([
-            Animated.timing(anim, {
-              toValue: -6,
-              duration: 280,
-              easing: Easing.out(Easing.quad),
-              useNativeDriver: true,
-            }),
-            Animated.timing(anim, {
-              toValue: 0,
-              duration: 280,
-              easing: Easing.in(Easing.quad),
-              useNativeDriver: true,
-            }),
-            Animated.delay(220),
-          ]),
-        );
-        loops.push(loop);
-        loop.start();
-      }, i * 150);
-      timeouts.push(tid);
-    });
-
-    return () => {
-      timeouts.forEach(clearTimeout);
-      loops.forEach((l) => l.stop());
-      anims.forEach((a) => a.setValue(0));
-    };
-  }, [anims]);
+  const spin = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   return (
-    <View style={styles.bounceDots}>
-      {anims.map((anim, i) => (
-        <Animated.View
+    <Animated.View style={[styles.spinnerWrap, { transform: [{ rotate: spin }] }]}>
+      {[0, 1, 2].map((i) => (
+        <View
           key={i}
-          style={[styles.bounceDot, { transform: [{ translateY: anim }] }]}
+          style={[
+            styles.spinnerDot,
+            { opacity: 1 - i * 0.3 },
+          ]}
         />
       ))}
-    </View>
+    </Animated.View>
+  );
+}
+
+/* ── Send flash overlay ─────────────────────────────── */
+
+function SendFlash({ active }: { active: boolean }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.5)).current;
+
+  useEffect(() => {
+    if (active) {
+      opacity.setValue(0.6);
+      scale.setValue(0.5);
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 600,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 2.5,
+          duration: 600,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [active, opacity, scale]);
+
+  if (!active) return null;
+  return (
+    <Animated.View
+      style={[
+        styles.sendFlash,
+        { opacity, transform: [{ scale }] },
+      ]}
+      pointerEvents="none"
+    />
   );
 }
 
@@ -170,10 +190,12 @@ export function ChatComposer({ onSend, disabled }: Props) {
   const [value, setValue] = useState("");
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [elapsed, setElapsed] = useState(0);
+  const [showFlash, setShowFlash] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const sendScale = useRef(new Animated.Value(1)).current;
   const micPulse = useRef(new Animated.Value(1)).current;
+  const shellGlow = useRef(new Animated.Value(0)).current;
 
   const rings = useRef(
     Array.from({ length: 3 }, () => ({
@@ -220,6 +242,25 @@ export function ChatComposer({ onSend, disabled }: Props) {
       runningAnims.current.push(pulse);
       pulse.start();
 
+      const glow = Animated.loop(
+        Animated.sequence([
+          Animated.timing(shellGlow, {
+            toValue: 1,
+            duration: 900,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+          Animated.timing(shellGlow, {
+            toValue: 0,
+            duration: 900,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
+          }),
+        ]),
+      );
+      runningAnims.current.push(glow);
+      glow.start();
+
       rings.forEach(({ scale, opacity }, i) => {
         const tid = setTimeout(() => {
           const ripple = Animated.loop(
@@ -259,6 +300,7 @@ export function ChatComposer({ onSend, disabled }: Props) {
       });
     } else {
       micPulse.setValue(1);
+      shellGlow.setValue(0);
       rings.forEach(({ scale, opacity }) => {
         scale.setValue(1);
         opacity.setValue(0);
@@ -271,7 +313,7 @@ export function ChatComposer({ onSend, disabled }: Props) {
       staggerIds.current.forEach(clearTimeout);
       staggerIds.current = [];
     };
-  }, [voiceState, micPulse, rings]);
+  }, [voiceState, micPulse, shellGlow, rings]);
 
   /* ── helpers ── */
 
@@ -289,7 +331,7 @@ export function ChatComposer({ onSend, disabled }: Props) {
     hapticMedium();
     Animated.sequence([
       Animated.spring(sendScale, {
-        toValue: 0.9,
+        toValue: 0.85,
         useNativeDriver: true,
         damping: 14,
         stiffness: 220,
@@ -314,11 +356,9 @@ export function ChatComposer({ onSend, disabled }: Props) {
         const result = await stopAndTranscribe();
         if (result.text) {
           hapticSuccess();
-          setValue((prev) => {
-            const space = prev.trim() ? " " : "";
-            return prev + space + result.text;
-          });
-          setTimeout(() => inputRef.current?.focus(), 100);
+          setShowFlash(true);
+          setTimeout(() => setShowFlash(false), 700);
+          onSend(result.text);
         }
       } catch (e) {
         console.warn("Transcription error:", e);
@@ -340,7 +380,7 @@ export function ChatComposer({ onSend, disabled }: Props) {
       console.warn("Recording error:", e);
       setVoiceState("idle");
     }
-  }, [voiceState]);
+  }, [voiceState, onSend]);
 
   const handleCancel = useCallback(async () => {
     if (voiceState !== "recording") return;
@@ -353,12 +393,22 @@ export function ChatComposer({ onSend, disabled }: Props) {
   const isRecording = voiceState === "recording";
   const isTranscribing = voiceState === "transcribing";
 
+  const shellBorderColor = isRecording
+    ? shellGlow.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["rgba(239,68,68,0.15)", "rgba(239,68,68,0.45)"],
+      })
+    : colors.borderStrong;
+
   return (
     <View style={styles.container}>
       <View style={styles.row}>
         {/* ── Input shell ── */}
-        <View
-          style={[styles.inputShell, isRecording && styles.inputShellRecording]}
+        <Animated.View
+          style={[
+            styles.inputShell,
+            { borderColor: shellBorderColor },
+          ]}
         >
           {isRecording ? (
             <View style={styles.recContent}>
@@ -371,8 +421,8 @@ export function ChatComposer({ onSend, disabled }: Props) {
             </View>
           ) : isTranscribing ? (
             <View style={styles.transContent}>
-              <BouncingDots />
-              <Text style={styles.transText}>Transcribing…</Text>
+              <SpinnerDots />
+              <Text style={styles.transText}>Sending voice…</Text>
             </View>
           ) : (
             <View style={styles.inputRow}>
@@ -410,7 +460,7 @@ export function ChatComposer({ onSend, disabled }: Props) {
               )}
             </View>
           )}
-        </View>
+        </Animated.View>
 
         {/* ── Action button ── */}
         {isRecording ? (
@@ -438,6 +488,7 @@ export function ChatComposer({ onSend, disabled }: Props) {
                   <Ionicons name="stop" size={20} color="#fff" />
                 </LinearGradient>
               </Animated.View>
+              <SendFlash active={showFlash} />
             </View>
           </Pressable>
         ) : (
@@ -460,14 +511,11 @@ export function ChatComposer({ onSend, disabled }: Props) {
                   (!canSend || isTranscribing) && styles.actionBtnMuted,
                 ]}
               >
-                <Text
-                  style={[
-                    styles.sendIcon,
-                    (!canSend || isTranscribing) && styles.sendIconMuted,
-                  ]}
-                >
-                  ↑
-                </Text>
+                <Ionicons
+                  name="arrow-up"
+                  size={22}
+                  color={canSend && !isTranscribing ? colors.bgDeep : colors.textSecondary}
+                />
               </LinearGradient>
             </Animated.View>
           </Pressable>
@@ -485,7 +533,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 12,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: spacing.md,
   },
 
@@ -494,7 +542,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.borderStrong,
     backgroundColor: "rgba(15,23,42,0.65)",
     ...Platform.select({
       ios: {
@@ -506,9 +553,6 @@ const styles = StyleSheet.create({
       android: { elevation: 3 },
       default: {},
     }),
-  },
-  inputShellRecording: {
-    borderColor: "rgba(239, 68, 68, 0.28)",
   },
   inputRow: {
     flexDirection: "row",
@@ -589,15 +633,28 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: colors.textSecondary,
   },
-  bounceDots: {
-    flexDirection: "row",
+  spinnerWrap: {
+    width: 20,
+    height: 20,
     alignItems: "center",
-    gap: 4,
+    justifyContent: "center",
   },
-  bounceDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+  spinnerDot: {
+    position: "absolute",
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.accent,
+    top: 0,
+    left: 7.5,
+  },
+
+  /* send flash */
+  sendFlash: {
+    position: "absolute",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.accent,
   },
 
@@ -640,14 +697,5 @@ const styles = StyleSheet.create({
   actionBtnMuted: {
     borderColor: colors.border,
     opacity: 0.55,
-  },
-  sendIcon: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: colors.bgDeep,
-    marginTop: -2,
-  },
-  sendIconMuted: {
-    color: colors.textSecondary,
   },
 });

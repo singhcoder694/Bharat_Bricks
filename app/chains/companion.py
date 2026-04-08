@@ -4,13 +4,13 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 
-from app.config import (
+from config import (
     DATABRICKS_TOKEN,
     DATABRICKS_BASE_URL,
     COMPANION_LLM_MODEL,
     COMPANION_GUARDRAILS_PATH,
 )
-from app.utils.retriever import retrieve_runnable
+from utils.retriever import retrieve_runnable
 
 with open(COMPANION_GUARDRAILS_PATH, "r", encoding="utf-8") as f:
     companion_guardrails_text = f.read()

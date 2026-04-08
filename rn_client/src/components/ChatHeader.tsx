@@ -1,15 +1,73 @@
 import { useEffect, useRef } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors, shadows, spacing } from "../theme";
 import { hapticLight } from "../lib/haptics";
 
 interface Props {
   onMenuPress: () => void;
   serverOnline?: boolean | null;
+  onSpeakMode?: () => void;
 }
 
-export function ChatHeader({ onMenuPress, serverOnline }: Props) {
+function PulsingDot({ color }: { color: string }) {
+  const pulseScale = useRef(new Animated.Value(1)).current;
+  const pulseOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(pulseScale, {
+            toValue: 2.8,
+            duration: 1400,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0,
+            duration: 1400,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(pulseScale, {
+            toValue: 1,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.5,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseScale, pulseOpacity]);
+
+  return (
+    <View style={styles.dotWrap}>
+      <Animated.View
+        style={[
+          styles.dotPulse,
+          {
+            backgroundColor: color,
+            opacity: pulseOpacity,
+            transform: [{ scale: pulseScale }],
+          },
+        ]}
+      />
+      <View style={[styles.statusDot, { backgroundColor: color }]} />
+    </View>
+  );
+}
+
+export function ChatHeader({ onMenuPress, serverOnline, onSpeakMode }: Props) {
   const slideY = useRef(new Animated.Value(-16)).current;
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -51,6 +109,10 @@ export function ChatHeader({ onMenuPress, serverOnline }: Props) {
         { opacity, transform: [{ translateY: slideY }] },
       ]}
     >
+      <LinearGradient
+        colors={["rgba(30,41,59,0.9)", "rgba(15,23,42,0.75)"]}
+        style={StyleSheet.absoluteFill}
+      />
       <View style={styles.container}>
         <View style={styles.left}>
           <Pressable
@@ -87,13 +149,35 @@ export function ChatHeader({ onMenuPress, serverOnline }: Props) {
               Tritiya AI
             </Text>
             <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              {serverOnline === true ? (
+                <PulsingDot color={statusColor} />
+              ) : (
+                <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              )}
               <Text style={styles.sub} numberOfLines={1}>
                 {statusLabel}
               </Text>
             </View>
           </View>
         </View>
+
+        {onSpeakMode && (
+          <Pressable
+            style={({ pressed }) => [styles.speakBtn, pressed && styles.pressed]}
+            onPress={() => {
+              hapticLight();
+              onSpeakMode();
+            }}
+            hitSlop={10}
+          >
+            <LinearGradient
+              colors={["rgba(94,234,212,0.15)", "rgba(99,102,241,0.15)"]}
+              style={styles.speakGrad}
+            >
+              <Ionicons name="radio-outline" size={20} color={colors.accent} />
+            </LinearGradient>
+          </Pressable>
+        )}
       </View>
     </Animated.View>
   );
@@ -101,9 +185,9 @@ export function ChatHeader({ onMenuPress, serverOnline }: Props) {
 
 const styles = StyleSheet.create({
   outer: {
-    backgroundColor: colors.glass,
     borderBottomWidth: 1,
-    borderBottomColor: colors.glassBorder,
+    borderBottomColor: "rgba(94,234,212,0.08)",
+    overflow: "hidden",
   },
   container: {
     flexDirection: "row",
@@ -183,6 +267,18 @@ const styles = StyleSheet.create({
     gap: 5,
     marginTop: 2,
   },
+  dotWrap: {
+    width: 10,
+    height: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dotPulse: {
+    position: "absolute",
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
   statusDot: {
     width: 7,
     height: 7,
@@ -192,5 +288,17 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     color: colors.textMuted,
     letterSpacing: 0.2,
+  },
+  speakBtn: {
+    marginLeft: 8,
+  },
+  speakGrad: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(94,234,212,0.15)",
   },
 });

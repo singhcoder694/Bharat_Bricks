@@ -4,7 +4,7 @@ from databricks.vector_search.client import VectorSearchClient
 from langchain_openai import OpenAIEmbeddings
 from langchain_core.runnables import RunnableLambda
 
-from app.config import (
+from config import (
     DATABRICKS_TOKEN,
     DATABRICKS_BASE_URL,
     VS_WORKSPACE_URL,
@@ -23,15 +23,24 @@ query_embeddings = OpenAIEmbeddings(
     check_embedding_ctx_length=False,
 )
 
-vsc = VectorSearchClient(
-    workspace_url=VS_WORKSPACE_URL,
-    personal_access_token=VS_TOKEN,
-    disable_notice=True,
-)
+vsc = None
+if VS_WORKSPACE_URL:
+    try:
+        vsc = VectorSearchClient(
+            workspace_url=VS_WORKSPACE_URL,
+            personal_access_token=VS_TOKEN,
+            disable_notice=True,
+        )
+    except Exception as _e:
+        logger.warning("Vector Search client init failed: %s — RAG disabled", _e)
+else:
+    logger.warning("VS_WORKSPACE_URL not set — RAG retrieval disabled")
 
 
 def retrieve_context(query: str, top_k: int = RAG_TOP_K) -> str:
     """Embed *query* via the AI Gateway, then search the Databricks vector index."""
+    if vsc is None:
+        return ""
     try:
         vec = query_embeddings.embed_query(query)
         idx = vsc.get_index(endpoint_name=VS_ENDPOINT, index_name=VS_INDEX)

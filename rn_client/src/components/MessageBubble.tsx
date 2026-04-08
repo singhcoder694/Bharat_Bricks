@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  Easing,
   Pressable,
   StyleSheet,
   Text,
@@ -24,36 +25,65 @@ interface Props {
 
 type TtsState = "idle" | "loading" | "playing" | "error";
 
+/* ── Glow pulse on new bot messages ─────────────────── */
+function useGlowPulse(isBot: boolean) {
+  const glow = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isBot) return;
+    Animated.sequence([
+      Animated.timing(glow, {
+        toValue: 1,
+        duration: 600,
+        delay: 300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(glow, {
+        toValue: 0,
+        duration: 1200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [isBot, glow]);
+
+  return glow;
+}
+
 export function MessageBubble({ message, index, languageCode, onRetry }: Props) {
   const isUser = message.role === "user";
   const isError = !!message.error;
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(20)).current;
-  const scale = useRef(new Animated.Value(0.97)).current;
+  const translateY = useRef(new Animated.Value(24)).current;
+  const scale = useRef(new Animated.Value(0.95)).current;
   const [ttsState, setTtsState] = useState<TtsState>("idle");
+
+  const glow = useGlowPulse(!isUser && !isError);
 
   useEffect(() => {
     const delay = Math.min(index * 55, 280);
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
-        duration: 380,
+        duration: 420,
         delay,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.spring(translateY, {
         toValue: 0,
         delay,
         useNativeDriver: true,
-        damping: 16,
-        stiffness: 140,
+        damping: 18,
+        stiffness: 130,
       }),
       Animated.spring(scale, {
         toValue: 1,
         delay,
         useNativeDriver: true,
-        damping: 14,
-        stiffness: 160,
+        damping: 16,
+        stiffness: 140,
       }),
     ]).start();
   }, [opacity, translateY, scale, index]);
@@ -69,10 +99,7 @@ export function MessageBubble({ message, index, languageCode, onRetry }: Props) 
     hapticLight();
     setTtsState("loading");
     try {
-      const res = await textToSpeech(
-        message.text,
-        languageCode || "en-IN",
-      );
+      const res = await textToSpeech(message.text, languageCode || "en-IN");
       setTtsState("playing");
       await playTtsSegments(res.segments);
       setTtsState("idle");
@@ -87,6 +114,16 @@ export function MessageBubble({ message, index, languageCode, onRetry }: Props) 
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const glowBorderColor = glow.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["rgba(94,234,212,0.06)", "rgba(94,234,212,0.25)"],
+  });
+
+  const glowShadowOpacity = glow.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.15],
+  });
+
   if (isError) {
     return (
       <Animated.View
@@ -97,15 +134,15 @@ export function MessageBubble({ message, index, languageCode, onRetry }: Props) 
         ]}
       >
         <LinearGradient
-          colors={[colors.accentMuted, "transparent"]}
+          colors={["rgba(239,68,68,0.2)", "transparent"]}
           style={styles.avatarRing}
         >
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>T</Text>
+          <View style={[styles.avatar, styles.avatarError]}>
+            <Ionicons name="alert" size={14} color="#f87171" />
           </View>
         </LinearGradient>
 
-        <Pressable onPress={onRetry}>
+        <Pressable onPress={onRetry} style={styles.bubbleCol}>
           <View style={[styles.bubble, styles.bubbleError]}>
             <Text style={[styles.text, styles.textError]}>{message.text}</Text>
             {onRetry && (
@@ -150,9 +187,21 @@ export function MessageBubble({ message, index, languageCode, onRetry }: Props) 
             <Text style={[styles.text, styles.textUser]}>{message.text}</Text>
           </LinearGradient>
         ) : (
-          <View style={[styles.bubble, styles.bubbleBot, shadows.card]}>
+          <Animated.View
+            style={[
+              styles.bubble,
+              styles.bubbleBot,
+              {
+                borderColor: glowBorderColor,
+                shadowColor: "#5eead4",
+                shadowOpacity: glowShadowOpacity,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 0 },
+              },
+            ]}
+          >
             <Text style={[styles.text, styles.textBot]}>{message.text}</Text>
-          </View>
+          </Animated.View>
         )}
 
         <View style={[styles.metaRow, isUser && styles.metaRowUser]}>
@@ -198,7 +247,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 10,
     maxWidth: "88%",
-    marginBottom: spacing.sm + 2,
+    marginBottom: spacing.sm + 4,
   },
   rowUser: {
     alignSelf: "flex-end",
@@ -225,6 +274,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.accent,
   },
+  avatarError: {
+    borderColor: "#f87171",
+    backgroundColor: "rgba(239,68,68,0.06)",
+  },
   avatarText: {
     fontSize: 13,
     fontWeight: "800",
@@ -249,22 +302,22 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.12)",
   },
   bubbleBot: {
-    backgroundColor: colors.bubbleBot,
+    backgroundColor: "rgba(30,41,59,0.85)",
     borderTopLeftRadius: radius.md,
     borderTopRightRadius: radius.md,
     borderBottomLeftRadius: radius.xs,
     borderBottomRightRadius: radius.md,
     borderWidth: 1,
-    borderColor: "rgba(15,23,42,0.06)",
+    borderColor: "rgba(94,234,212,0.06)",
   },
   bubbleError: {
-    backgroundColor: "rgba(239,68,68,0.08)",
+    backgroundColor: "rgba(239,68,68,0.06)",
     borderTopLeftRadius: radius.md,
     borderTopRightRadius: radius.md,
     borderBottomLeftRadius: radius.xs,
     borderBottomRightRadius: radius.md,
     borderWidth: 1,
-    borderColor: "rgba(239,68,68,0.25)",
+    borderColor: "rgba(239,68,68,0.2)",
     paddingVertical: 14,
     paddingHorizontal: 18,
   },
@@ -278,7 +331,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   textBot: {
-    color: colors.bubbleBotText,
+    color: colors.textPrimary,
     fontWeight: "400",
   },
   textError: {
@@ -293,7 +346,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "rgba(239,68,68,0.2)",
+    borderTopColor: "rgba(239,68,68,0.15)",
   },
   retryText: {
     fontSize: 12,

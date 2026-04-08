@@ -4,7 +4,7 @@ import tempfile
 import requests
 import gdown
 
-from app.config import DRIVE_FOLDER_URL, GOOGLE_API_KEY
+from config import DRIVE_FOLDER_URL, GOOGLE_API_KEY
 
 DRIVE_API = "https://www.googleapis.com/drive/v3/files"
 

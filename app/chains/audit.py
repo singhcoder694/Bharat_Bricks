@@ -5,8 +5,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from app.config import DATABRICKS_TOKEN, DATABRICKS_BASE_URL, AUDIT_LLM_MODEL, GUARDRAILS_PATH
-from app.schemas import AuditResult, ChunkAuditResult
+from config import DATABRICKS_TOKEN, DATABRICKS_BASE_URL, AUDIT_LLM_MODEL, GUARDRAILS_PATH
+from schemas import AuditResult, ChunkAuditResult
 
 with open(GUARDRAILS_PATH, "r", encoding="utf-8") as f:
     guardrails_text = f.read()

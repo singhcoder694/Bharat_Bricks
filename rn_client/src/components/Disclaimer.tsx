@@ -1,16 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { colors, spacing } from "../theme";
 
 export function Disclaimer() {
   return (
     <View style={styles.wrap}>
-      <LinearGradient
-        colors={["transparent", "rgba(94,234,212,0.06)"]}
-        style={styles.glow}
-      />
       <Text style={styles.text}>
-        Educational information only · Not legal or medical advice
+        Educational info only · Not legal or medical advice
       </Text>
       <Text style={styles.line2}>
         Crisis: Women Helpline <Text style={styles.bold}>181</Text> · iCall{" "}
@@ -22,34 +17,28 @@ export function Disclaimer() {
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingVertical: 12,
+    paddingVertical: 8,
     paddingHorizontal: spacing.md + 4,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-    overflow: "hidden",
-  },
-  glow: {
-    ...StyleSheet.absoluteFillObject,
-    height: 40,
-    top: undefined,
-    bottom: 0,
   },
   text: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: colors.textMuted,
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 15,
     letterSpacing: 0.15,
+    opacity: 0.7,
   },
   line2: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: colors.textSecondary,
     textAlign: "center",
-    marginTop: 4,
-    lineHeight: 16,
+    marginTop: 2,
+    lineHeight: 15,
+    opacity: 0.7,
   },
   bold: {
     fontWeight: "700",
     color: colors.accent,
+    opacity: 1,
   },
 });

@@ -8,7 +8,7 @@ from typing import Any
 
 import httpx
 
-from app.config import (
+from config import (
     SARVAM_API_BASE,
     SARVAM_API_KEY,
     SARVAM_TTS_MODEL,

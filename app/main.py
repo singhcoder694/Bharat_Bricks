@@ -10,13 +10,13 @@ from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSock
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
-from app.schemas import AuditResult, ChatRequest, ChatResponse, TranscribeResponse, TtsRequest, TtsResponse, TtsSegment
-from app.config import CORS_ORIGINS
-from app.utils.sarvam_transcribe import transcribe_audio_bytes
-from app.utils.sarvam_tts import synthesize_speech_mp3_segments
-from app.chains.audit import file_chain
-from app.chains.companion import companion_chain
-from app.utils.drive import list_folder_files, download_single_file
+from schemas import AuditResult, ChatRequest, ChatResponse, TranscribeResponse, TtsRequest, TtsResponse, TtsSegment
+from config import CORS_ORIGINS
+from utils.sarvam_transcribe import transcribe_audio_bytes
+from utils.sarvam_tts import synthesize_speech_mp3_segments
+from chains.audit import file_chain
+from chains.companion import companion_chain
+from utils.drive import list_folder_files, download_single_file
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ if CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 
 RESPONSE_FILE = "response.json"
 
