@@ -1,0 +1,68 @@
+:root {
+  --bg-deep: #020617;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-surface: #334155;
+  --bg-input: #1e293b;
+  --glass: rgba(30, 41, 59, 0.72);
+  --glass-border: rgba(148, 163, 184, 0.12);
+
+  --accent: #5eead4;
+  --accent-dim: #2dd4bf;
+  --accent-muted: rgba(94, 234, 212, 0.15);
+  --accent-glow: rgba(94, 234, 212, 0.12);
+
+  --bubble-user-mid: #6366f1;
+  --bubble-user: #4f46e5;
+  --bubble-user-text: #f8fafc;
+  --bubble-bot: #f1f5f9;
+  --bubble-bot-text: #0f172a;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --border: #334155;
+  --border-subtle: rgba(148, 163, 184, 0.14);
+  --border-strong: rgba(148, 163, 184, 0.22);
+  --shadow: rgba(0, 0, 0, 0.35);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+
+  --aside-width: clamp(260px, 22vw, 320px);
+  /* Web-first: bubbles can use most of the main column (still capped for very wide monitors) */
+  --bubble-row-max: min(96%, 72rem);
+
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  font-family: var(--font);
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: var(--bg-deep);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  background: var(--bg-deep);
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}

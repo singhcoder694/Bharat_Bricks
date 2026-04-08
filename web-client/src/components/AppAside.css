@@ -1,0 +1,35 @@
+.app-aside {
+  display: none;
+  width: var(--aside-width);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, #1e293b 0%, #172554 45%, #1e1b4b 100%);
+}
+
+@media (min-width: 1024px) {
+  .app-aside {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.app-aside__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 1.25rem 1rem 1rem;
+  overflow: hidden;
+}
+
+.app-aside__inner .sidebar-panel {
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.app-aside__inner .sidebar-panel__footer {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, transparent, rgba(30, 41, 59, 0.95) 30%);
+  padding-bottom: 0.5rem;
+}

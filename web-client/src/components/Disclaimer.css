@@ -1,0 +1,26 @@
+.disclaimer {
+  text-align: center;
+  font-size: clamp(0.68rem, 1.8vw, 0.75rem);
+  color: var(--text-muted);
+  padding: 0.65rem clamp(1rem, 3vw, 2.5rem) 0.85rem;
+  background: rgba(15, 23, 42, 0.75);
+  border-top: 1px solid var(--border-subtle);
+  line-height: 1.45;
+}
+
+.disclaimer__line {
+  margin: 0;
+}
+
+.disclaimer__line + .disclaimer__line {
+  margin-top: 0.35rem;
+}
+
+.disclaimer__line--crisis {
+  color: var(--text-secondary);
+}
+
+.disclaimer__accent {
+  color: var(--accent);
+  font-weight: 700;
+}
