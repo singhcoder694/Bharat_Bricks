@@ -2,8 +2,7 @@ import os
 from dotenv import load_dotenv
 
 _APP_DIR = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_DIR = os.path.dirname(_APP_DIR)
-load_dotenv(os.path.join(_PROJECT_DIR, ".env"), override=True)
+load_dotenv(os.path.join(_APP_DIR, ".env"), override=True)
 
 DATABRICKS_TOKEN = os.environ.get("DATABRICKS_TOKEN")
 DATABRICKS_BASE_URL = os.environ.get("DATABRICKS_BASE_URL")
