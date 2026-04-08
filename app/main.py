@@ -257,8 +257,15 @@ async def websocket_chat(ws: WebSocket):
         print(f"Session {session_id} disconnected")
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
     index_path = os.path.join(FRONTEND_DIR, "index.html")
+    if not os.path.exists(index_path):
+        return HTMLResponse(content="<h1>Tritiya API is running</h1><p>Use /health, /chat, /tts, /transcribe</p>")
     with open(index_path, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())

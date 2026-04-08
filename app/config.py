@@ -59,11 +59,10 @@ _raw_pace = _float_env("SARVAM_TTS_PACE", 1.0)
 SARVAM_TTS_PACE = max(0.5, min(2.0, _raw_pace))
 
 # Comma-separated origins for browser clients (e.g. Vite web-client on :5173)
-CORS_ORIGINS = [
-    o.strip()
-    for o in os.environ.get(
-        "CORS_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
-    ).split(",")
-    if o.strip()
+_cors_raw = os.environ.get(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000",
+)
+CORS_ORIGINS = ["*"] if _cors_raw.strip() == "*" else [
+    o.strip() for o in _cors_raw.split(",") if o.strip()
 ]
