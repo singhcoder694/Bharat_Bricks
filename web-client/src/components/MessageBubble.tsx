@@ -21,6 +21,34 @@ const variants = {
   visible: { opacity: 1, y: 0, scale: 1 },
 };
 
+function renderInlineBold(text: string): React.ReactNode[] {
+  // Minimal formatting: convert **bold** to <strong>. Leaves unmatched ** as-is.
+  const out: React.ReactNode[] = [];
+  const parts = text.split("**");
+  for (let i = 0; i < parts.length; i++) {
+    const chunk = parts[i];
+    const key = `${i}-${chunk.length}`;
+    if (i % 2 === 1) out.push(<strong key={key}>{chunk}</strong>);
+    else out.push(<span key={key}>{chunk}</span>);
+  }
+  return out;
+}
+
+function renderMessageText(text: string): React.ReactNode {
+  // Preserve newlines, apply inline bold per line to keep keys stable.
+  const lines = text.split("\n");
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={`${i}-${line.length}`}>
+          {renderInlineBold(line)}
+          {i < lines.length - 1 ? <br /> : null}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function SpeakerIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden fill="currentColor">
@@ -58,7 +86,7 @@ export function MessageBubble({ message, apiBaseUrl }: Props) {
 
   const toggleListen = useCallback(async () => {
     if (!ttsAvailable) return;
-    if (isMessageSpeaking(message.id)) {
+    if (phase !== "idle" || isMessageSpeaking(message.id)) {
       cancelSpeechIfMessage(message.id);
       setPhase("idle");
       return;
@@ -67,11 +95,14 @@ export function MessageBubble({ message, apiBaseUrl }: Props) {
     await unlockAudio();
     setPhase("loading");
     try {
-      await speakText(message.id, message.text, { apiBaseUrl });
+      await speakText(message.id, message.text, {
+        apiBaseUrl,
+        onPlaybackStart: () => setPhase("playing"),
+      });
     } finally {
       setPhase("idle");
     }
-  }, [message.id, message.text, ttsAvailable, apiBaseUrl]);
+  }, [message.id, message.text, ttsAvailable, apiBaseUrl, phase]);
 
   return (
     <motion.div
@@ -98,24 +129,38 @@ export function MessageBubble({ message, apiBaseUrl }: Props) {
       )}
       {isUser ? (
         <div className="bubble bubble--user">
-          <p className="bubble__text">{message.text}</p>
+          <p className="bubble__text">{renderMessageText(message.text)}</p>
         </div>
       ) : (
         <div className="bubble-with-actions">
           <div className="bubble bubble--bot">
-            <p className="bubble__text">{message.text}</p>
+            <p className="bubble__text">{renderMessageText(message.text)}</p>
           </div>
           {ttsAvailable && (
-            <button
-              type="button"
-              className={`bubble-tts ${phase !== "idle" ? "bubble-tts--active" : ""}`}
-              onClick={toggleListen}
-              title={phase === "idle" ? "Listen" : phase === "loading" ? "Loading…" : "Stop"}
-              aria-label={phase === "idle" ? "Listen to this response" : "Stop reading aloud"}
-              aria-pressed={phase !== "idle"}
-            >
-              {phase === "idle" ? <SpeakerIcon /> : phase === "loading" ? <SpinnerIcon /> : <StopIcon />}
-            </button>
+            <div className="bubble-tts-wrap">
+              <button
+                type="button"
+                className={`bubble-tts ${phase !== "idle" ? "bubble-tts--active" : ""}${phase === "loading" ? " bubble-tts--loading" : ""}`}
+                onClick={toggleListen}
+                title={phase === "idle" ? "Listen" : phase === "loading" ? "Generating voice…" : "Stop"}
+                aria-label={
+                  phase === "idle"
+                    ? "Listen to this response"
+                    : phase === "loading"
+                      ? "Generating voice, tap to cancel"
+                      : "Stop reading aloud"
+                }
+                aria-pressed={phase !== "idle"}
+                aria-busy={phase === "loading"}
+              >
+                {phase === "idle" ? <SpeakerIcon /> : phase === "loading" ? <SpinnerIcon /> : <StopIcon />}
+              </button>
+              <span
+                className={`bubble-tts-hint${phase === "loading" ? " bubble-tts-hint--show" : ""}`}
+              >
+                Generating voice…
+              </span>
+            </div>
           )}
         </div>
       )}
