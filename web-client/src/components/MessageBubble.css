@@ -23,6 +23,33 @@
   max-width: 100%;
 }
 
+.bubble-tts-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  /* Reserve hint space to avoid layout jump/glitch when it appears/disappears */
+  min-height: 58px;
+}
+
+.bubble-tts-hint {
+  font-size: 0.68rem;
+  line-height: 1.1;
+  color: var(--text-muted);
+  white-space: nowrap;
+  user-select: none;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  height: 0.75rem;
+}
+
+.bubble-tts-hint--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .bubble-with-actions .bubble {
   min-width: 0;
   flex: 1;
@@ -60,7 +87,7 @@
   box-shadow: 0 0 0 2px rgba(244, 114, 182, 0.25);
 }
 
-.bubble-tts--active svg {
+.bubble-tts--loading svg {
   animation: bubble-tts-spin 0.9s linear infinite;
 }
 

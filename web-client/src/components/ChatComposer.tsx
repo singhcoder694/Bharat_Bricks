@@ -76,20 +76,48 @@ export function ChatComposer({ onSend, disabled, apiBaseUrl }: Props) {
 
   /** Must stay clickable while listening so the user can tap again to stop — only disable while transcribing. */
   const micDisabled = disabled || !voiceEnabled || voicePhase === "transcribing";
-  const micLabel =
-    voicePhase === "listening"
-      ? "Tap to stop and transcribe"
+  const micLabel = voiceEnabled
+    ? voicePhase === "listening"
+      ? "Stop recording"
       : voicePhase === "transcribing"
         ? "Transcribing…"
-        : "Tap to speak, tap again to send";
+        : "Start voice input"
+    : "Voice unavailable";
+
+  const statusTone: "ready" | "listening" | "busy" | "disabled" = !voiceEnabled
+    ? "disabled"
+    : disabled
+      ? "busy"
+      : voicePhase === "listening"
+        ? "listening"
+        : voicePhase === "transcribing"
+          ? "busy"
+          : "ready";
+
+  const statusText = !voiceEnabled
+    ? "Voice off — set VITE_API_URL to enable mic"
+    : disabled
+      ? "Assistant is responding…"
+      : voicePhase === "listening"
+        ? "Listening… tap mic to stop"
+        : voicePhase === "transcribing"
+          ? "Transcribing…"
+          : "Ready — type a message or tap mic to speak";
 
   return (
     <div className="composer-stack">
+      <div className={`composer-status composer-status--${statusTone}`} aria-live="polite">
+        <span className="composer-status__dot" aria-hidden />
+        <span className="composer-status__text">{statusText}</span>
+        <span className="composer-status__keys" aria-hidden>
+          Enter to send · Shift+Enter for new line
+        </span>
+      </div>
       <form className="composer" onSubmit={submit}>
         <textarea
           ref={inputRef}
           className="composer__input"
-          placeholder="Ask something privately…"
+          placeholder={voiceEnabled ? "Type a message… (or use the mic)" : "Type a message…"}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -101,7 +129,9 @@ export function ChatComposer({ onSend, disabled, apiBaseUrl }: Props) {
           className={`composer__mic${voicePhase === "listening" ? " composer__mic--hot" : ""}${voicePhase === "transcribing" ? " composer__mic--busy" : ""}`}
           disabled={micDisabled}
           onClick={toggleVoice}
-          title={voiceEnabled ? micLabel : "Set VITE_API_URL in web-client/.env to enable voice (Sarvam STT)"}
+          title={
+            voiceEnabled ? micLabel : "Set VITE_API_URL in web-client/.env to enable voice (Sarvam STT)"
+          }
           aria-label={voiceEnabled ? micLabel : "Voice unavailable"}
           whileTap={{ scale: 0.9 }}
           whileHover={{ scale: voiceEnabled && !micDisabled ? 1.05 : 1 }}
